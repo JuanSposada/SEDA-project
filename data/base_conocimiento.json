@@ -1,0 +1,992 @@
+[
+  {
+    "id_refaccion": "REF-HON-001",
+    "componente": "Bobina de Encendido",
+    "sistema": "Sistema de Encendido",
+    "codigos_asociados": ["P0300", "P0301", "P0302", "P0303", "P0304"],
+    "sintomas_clave": ["El motor tiembla en ralentí", "Jaloneo al acelerar", "Pérdida notable de potencia", "Testigo Check Engine parpadea"],
+    "compatibilidad": {
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anios": [2012, 2013, 2014, 2015],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Fallo de aislamiento en el devanado secundario de la bobina, impidiendo que la chispa llegue correctamente a la bujía.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Intercambiar la bobina del cilindro que acusa la falla (ej. Cilindro 1) al cilindro contiguo y verificar si el código de falla migra (ej. a P0302)."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "30520-R1A-A01",
+      "precio_estimado_mxn": 950.00
+    }
+  },
+  {
+    "id_refaccion": "REF-HON-002",
+    "componente": "Bujías de Iridio",
+    "sistema": "Sistema de Encendido",
+    "codigos_asociados": ["P0300", "P0172"],
+    "sintomas_clave": ["Dificultad para arrancar en frío", "Consumo excesivo de combustible", "Marcha mínima inestable"],
+    "compatibilidad": {
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anios": [2012, 2013, 2014, 2015],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Desgaste excesivo del electrodo central o calibración incorrecta, provocando una combustión incompleta.",
+      "gravedad": "Media",
+      "prueba_sugerida": "Retirar las bujías e inspeccionar visualmente el estado del electrodo y la presencia de depósitos de carbón o aceite."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "DILZKR7B11GS",
+      "precio_estimado_mxn": 1200.00
+    }
+  },
+  {
+    "id_refaccion": "REF-HON-003",
+    "componente": "Sensor de Flujo de Masa de Aire (MAF)",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0101", "P0102", "P0171"],
+    "sintomas_clave": ["El motor se apaga repentinamente en semáforos", "Humo negro por el escape", "Vacilación al acelerar"],
+    "compatibilidad": {
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anios": [2012, 2013, 2014, 2015],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Contaminación del hilo caliente del sensor por partículas de polvo o aceite provenientes de un filtro de aire defectuoso.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Monitorear con escáner los gramos por segundo (g/s) del sensor en ralentí; debe rondar los 2.0 - 2.5 g/s para este motor."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "37980-R1A-A01",
+      "precio_estimado_mxn": 1650.00
+    }
+  },
+  {
+    "id_refaccion": "REF-HON-004",
+    "componente": "Sensor de Oxígeno Anterior (B1S1)",
+    "sistema": "Sistema de Emisiones",
+    "codigos_asociados": ["P0134", "P0135", "P0171"],
+    "sintomas_clave": ["Alto consumo de gasolina", "Olor a combustible crudo por el escape", "Falta de potencia en pendientes"],
+    "compatibilidad": {
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anios": [2012, 2013, 2014, 2015],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Fallo en el circuito del calefactor interno del sensor o degradación química de la celda de circonio.",
+      "gravedad": "Media",
+      "prueba_sugerida": "Medir la resistencia del circuito calefactor del sensor con un multímetro; debe marcar continuidad dentro de las especificaciones del fabricante."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "36531-R1A-A01",
+      "precio_estimado_mxn": 2400.00
+    }
+  },
+  {
+    "id_refaccion": "REF-HON-005",
+    "componente": "Convertidor Catalítico",
+    "sistema": "Sistema de Emisiones",
+    "codigos_asociados": ["P0420"],
+    "sintomas_clave": ["Falta severa de potencia a altas RPM", "Olor a huevo podrido o azufre", "Ruido de cascabeleo metálico debajo del auto"],
+    "compatibilidad": {
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anios": [2012, 2013, 2014, 2015],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Degradación o fractura del sustrato cerámico interno (panal) debido a fallas de encendido prolongadas que enviaron gasolina cruda al escape.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Monitorear la gráfica del sensor de oxígeno secundario (B1S2). Si oscila al mismo ritmo que el primario, el catalizador perdió su capacidad de almacenamiento de oxígeno."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "18160-R1A-A00",
+      "precio_estimado_mxn": 6800.00
+    }
+  },
+  {
+    "id_refaccion": "REF-HON-006",
+    "componente": "Bomba de Combustible",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0171", "P0087"],
+    "sintomas_clave": ["El motor da marcha pero no arranca", "Se ahoga o tironea al acelerar a fondo", "Pérdida de potencia intermitente"],
+    "compatibilidad": {
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anios": [2012, 2013, 2014, 2015],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Pérdida de presión interna en el motor eléctrico de la bomba o filtro/cedazo severamente obstruido.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Conectar un manómetro en el riel de inyección y verificar que la presión se mantenga estable en ralentí (típicamente entre 40-50 PSI)."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "17045-TR0-A01",
+      "precio_estimado_mxn": 2100.00
+    }
+  },
+  {
+    "id_refaccion": "REF-HON-007",
+    "componente": "Cuerpo de Aceleración Electrónico",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0121", "P0221", "P2101"],
+    "sintomas_clave": ["El pedal del acelerador no responde", "Las revoluciones suben y bajan solas (oscilación)", "Modo flácido o Limp Mode activado"],
+    "compatibilidad": {
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anios": [2012, 2013, 2014, 2015],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Fallo en las pistas del potenciómetro del sensor TPS integrado o acumulación excesiva de lodo/carbón que traba la mariposa.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Realizar una inspección visual de la mariposa y medir la correlación de voltaje entre los sensores TPS 1 y TPS 2 con línea de datos."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "16400-R1A-A01",
+      "precio_estimado_mxn": 3200.00
+    }
+  },
+  {
+    "id_refaccion": "REF-HON-008",
+    "componente": "Sensor de Posición de Cigüeñal (CKP)",
+    "sistema": "Sistema de Encendido",
+    "codigos_asociados": ["P0335", "P0339"],
+    "sintomas_clave": ["El auto se apaga de la nada corriendo", "No arranca en caliente pero sí en frío", "Corte de inyección repentino"],
+    "compatibilidad": {
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anios": [2012, 2013, 2014, 2015],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Fallo por circuito abierto intermitente debido a la resistencia térmica del sensor cuando el motor alcanza temperatura de operación.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Comprobar la señal de onda cuadrada del sensor con un osciloscopio mientras se simula temperatura con una pistola de calor."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "37500-R1A-A01",
+      "precio_estimado_mxn": 1100.00
+    }
+  },
+  {
+    "id_refaccion": "REF-HON-009",
+    "componente": "Termostato del Motor",
+    "sistema": "Sistema de Enfriamiento",
+    "codigos_asociados": ["P0128"],
+    "sintomas_clave": ["La aguja de temperatura no sube a la mitad", "El aire acondicionado no enfría de inmediato", "Consumo elevado de combustible en trayectos cortos"],
+    "compatibilidad": {
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anios": [2012, 2013, 2014, 2015],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "El termostato se quedó pegado en posición abierta, permitiendo el flujo continuo de refrigerante e impidiendo que el motor alcance su temperatura óptima de operación.",
+      "gravedad": "Media",
+      "prueba_sugerida": "Tocar ambas mangueras del radiador durante el calentamiento; si ambas se calientan al mismo tiempo desde el encendido, el termostato está abierto."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "19301-RAF-004",
+      "precio_estimado_mxn": 650.00
+    }
+  },
+  {
+    "id_refaccion": "REF-HON-010",
+    "componente": "Tapón de Gasolina con Válvula EVAP",
+    "sistema": "Sistema de Emisiones",
+    "codigos_asociados": ["P0442", "P0455", "P0456"],
+    "sintomas_clave": ["Luz de Check Engine encendida", "Olor ligero a gasolina cerca de la parte trasera del auto", "Ninguna falla mecánica aparente en el motor"],
+    "compatibilidad": {
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anios": [2012, 2013, 2014, 2015],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_expert": {
+      "causa_raiz": "Empaque de hule agrietado o deformado en el tapón, lo que provoca fugas de vapores de combustible hacia la atmósfera.",
+      "gravedad": "Baja",
+      "prueba_sugerida": "Inspeccionar visualmente la liga del tapón buscando grietas; asegurar que haga el característico 'clic' al cerrar."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "17670-T3W-A01",
+      "precio_estimado_mxn": 380.00
+    }
+  },
+  {
+    "id_refaccion": "REF-HON-011",
+    "componente": "Válvula de Purga del Canister (EVAP)",
+    "sistema": "Sistema de Emisiones",
+    "codigos_asociados": ["P0443", "P0496"],
+    "sintomas_clave": ["Dificultad para encender el auto inmediatamente después de cargar gasolina", "Marcha mínima inestable momentánea"],
+    "compatibilidad": {
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anios": [2012, 2013, 2014, 2015],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "La válvula solenoide quedó mecánicamente atascada en posición abierta, permitiendo el paso descontrolado de vapores de combustible al pleno de admisión.",
+      "gravedad": "Media",
+      "prueba_sugerida": "Desconectar la válvula y aplicar vacío manualmente; no debería permitir el paso de aire si no está energizada eléctricamente."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "36162-R1A-A01",
+      "precio_estimado_mxn": 1150.00
+    }
+  },
+  {
+    "id_refaccion": "REF-HON-012",
+    "componente": "Sensor de Temperatura de Refrigerante (ECT)",
+    "sistema": "Sistema de Enfriamiento",
+    "codigos_asociados": ["P0117", "P0118"],
+    "sintomas_clave": ["Los motoventiladores se quedan encendidos todo el tiempo", "Dificultad de arranque", "Indicador de temperatura errático"],
+    "compatibilidad": {
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anios": [2012, 2013, 2014, 2015],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Cortocircuito o circuito abierto en el termistor interno del sensor, enviando lecturas fuera de rango a la PCM (ej. -40°C o 140°C).",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Medir los Ohmios del sensor y contrastar contra la tabla de temperatura vs resistencia del fabricante empleando un multímetro."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "37870-RTA-005",
+      "precio_estimado_mxn": 520.00
+    }
+  },
+  {
+    "id_refaccion": "REF-HON-013",
+    "componente": "Inyector de Combustible",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0201", "P0202", "P0203", "P0204", "P0300"],
+    "sintomas_clave": ["Fallo de cilindro específico persistente", "Humo blanco intermitente con fuerte olor a gasolina"],
+    "compatibilidad": {
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anios": [2012, 2013, 2014, 2015],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Fallo en el bobinado del solenoide del inyector o aguja interna atascada por suciedad.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Medir la resistencia del inyector directamente en sus pines; debe marcar típicamente entre 10 y 13 Ohmios en este modelo."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "16450-RNA-A01",
+      "precio_estimado_mxn": 1450.00
+    }
+  },
+  {
+    "id_refaccion": "REF-HON-014",
+    "componente": "Sensor de Detonación (Knock Sensor)",
+    "sistema": "Sistema de Encendido",
+    "codigos_asociados": ["P0325"],
+    "sintomas_clave": ["Sonido de cascabeleo bajo carga pesada", "Pérdida sutil de potencia al acelerar en autopista"],
+    "compatibilidad": {
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anios": [2012, 2013, 2014, 2015],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Rotura del cristal piezoeléctrico interno del sensor debido a vibraciones o antigüedad, impidiendo retrasar el tiempo de encendido adecuadamente.",
+      "gravedad": "Media",
+      "prueba_sugerida": "Revisar el arnés del sensor (es común que roedores lo dañen por su ubicación debajo del múltiple de admisión)."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "30530-R1A-A01",
+      "precio_estimado_mxn": 880.00
+    }
+  },
+  {
+    "id_refaccion": "REF-HON-015",
+    "componente": "Válvula de Control de Aire en Marcha Mínima (IAC/EACV)",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0505", "P0507"],
+    "sintomas_clave": ["El auto se apaga inmediatamente al soltar el acelerador", "Ralentí excesivamente alto (arriba de 1200 RPM)"],
+    "compatibilidad": {
+      "marca": "Honda",
+      "modelo": "Civic",
+      "anios": [2012, 2013, 2014, 2015],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Acumulación de carbón en el bypass del aire o fallo electrónico en el motor de pasos de la válvula (Nota: integrada en el cuerpo de aceleración electrónico en versiones avanzadas).",
+      "gravedad": "Media",
+      "prueba_sugerida": "Verificar la existencia de entradas de aire parásitas (fugas de vacío) en las mangueras de la admisión antes de reemplazar."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "16400-R1A-A01-IAC",
+      "precio_estimado_mxn": 1800.00
+    }
+  },
+  {
+    "id_refaccion": "REF-NIS-001",
+    "componente": "Sensor de Posición de Árbol de Levas (CMP)",
+    "sistema": "Sistema de Encendido",
+    "codigos_asociados": ["P0340", "P0341"],
+    "sintomas_clave": ["El carro tarda mucho en encender (marcha prolongada)", "Tironeos circulando", "Luz de Check Engine fija"],
+    "compatibilidad": {
+      "marca": "Nissan",
+      "modelo": "Versa",
+      "anios": [2015, 2016, 2017, 2018],
+      "motores": ["1.6L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Fallo del elemento de efecto Hall del sensor debido a ciclos térmicos repetidos del motor.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Verificar la alimentación de 5V y tierra en el conector del sensor, y comprobar pulsos de señal con un multímetro en Hz o con osciloscopio."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "23731-1VA0A",
+      "precio_estimado_mxn": 890.00
+    }
+  },
+  {
+    "id_refaccion": "REF-NIS-002",
+    "componente": "Sensor de Flujo de Masa de Aire (MAF)",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0101", "P0171"],
+    "sintomas_clave": ["Humo negro con olor a gasolina", "Falta de potencia al acelerar", "Revoluciones inestables en alto total"],
+    "compatibilidad": {
+      "marca": "Nissan",
+      "modelo": "Versa",
+      "anios": [2015, 2016, 2017, 2018],
+      "motores": ["1.6L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Filamento del sensor sucio o descalibrado, enviando una señal de voltaje errónea que confunde el cálculo estequiométrico de la ECM.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Verificar boletines técnicos de Nissan (NTB); el código P0101 en Versa muchas veces requiere reprogramación de la ECM además de la limpieza/cambio del sensor."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "22680-1MB0A",
+      "precio_estimado_mxn": 1350.00
+    }
+  },
+  {
+    "id_refaccion": "REF-NIS-003",
+    "componente": "Bobina de Encendido",
+    "sistema": "Sistema de Encendido",
+    "codigos_asociados": ["P0300", "P0301", "P0302", "P0303", "P0304"],
+    "sintomas_clave": ["Pérdida de potencia notable", "Temblor excesivo en la cabina", "Fallo de cilindro bajo carga"],
+    "compatibilidad": {
+      "marca": "Nissan",
+      "modelo": "Versa",
+      "anios": [2015, 2016, 2017, 2018],
+      "motores": ["1.6L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Degradación térmica del plástico aislante de la bota de la bobina, permitiendo que la chispa brinque hacia la pared de la culata en lugar de ir a la bujía.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Revisar códigos de falla grabados e intercambiar la bobina sospechosa para confirmar daño."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "22448-1KT0A",
+      "precio_estimated_mxn": 780.00
+    }
+  },
+  {
+    "id_refaccion": "REF-NIS-004",
+    "componente": "Bujías de Platino (Punta Delgada)",
+    "sistema": "Sistema de Encendido",
+    "codigos_asociados": ["P0300"],
+    "sintomas_clave": ["Arranque pesado", "Ligero jaloneo a velocidad de crucero", "Elevación de emisiones contaminantes"],
+    "compatibilidad": {
+      "marca": "Nissan",
+      "modelo": "Versa",
+      "anios": [2015, 2016, 2017, 2018],
+      "motores": ["1.6L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Fin de la vida útil del electrodo por desgaste natural o acumulación de hollín por trayectos cortos.",
+      "gravedad": "Media",
+      "prueba_sugerida": "Extraer las bujías utilizando el dado delgado de 14mm especial para motores Nissan e inspeccionar desgaste."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "PLZKAR6A-11",
+      "precio_estimado_mxn": 980.00
+    }
+  },
+  {
+    "id_refaccion": "REF-NIS-005",
+    "componente": "Sensor de Oxígeno Primario (Relación Aire/Combustible)",
+    "sistema": "Sistema de Emisiones",
+    "codigos_asociados": ["P0130", "P0171", "P1148"],
+    "sintomas_clave": ["Gasto excesivo de gasolina", "El motor responde con lentitud al acelerador", "Luz de falla permanente"],
+    "compatibilidad": {
+      "marca": "Nissan",
+      "modelo": "Versa",
+      "anios": [2015, 2016, 2017, 2018],
+      "motores": ["1.6L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Pérdida de lazo cerrado (Closed Loop control) debido a respuestas flojas o nulas del sensor de banda ancha delantero.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Monitorear el parámetro 'Alpha' en el escáner. Valores muy alejados del 100% indican correcciones de combustible severas por fallas del sensor."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "22693-1KC0A",
+      "precio_estimado_mxn": 2200.00
+    }
+  },
+  {
+    "id_refaccion": "REF-NIS-006",
+    "componente": "Sensor de Posición del Cigüeñal (CKP)",
+    "sistema": "Sistema de Encendido",
+    "codigos_asociados": ["P0335"],
+    "sintomas_clave": ["El motor se apaga repentinamente en marcha", "No hay chispa ni pulso de inyección al dar marcha"],
+    "compatibilidad": {
+      "marca": "Nissan",
+      "modelo": "Versa",
+      "anios": [2015, 2016, 2017, 2018],
+      "motores": ["1.6L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Cortocircuito interno en el embobinado del sensor magnético por sobrecalentamiento de la zona del bloque del motor.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Intentar encender el vehículo; si el tacómetro digital en el tablero no se mueve absolutamente nada al dar marcha, el CKP está muerto."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "23731-1KT0A",
+      "precio_estimado_mxn": 820.00
+    }
+  },
+  {
+    "id_refaccion": "REF-NIS-007",
+    "componente": "Cuerpo de Aceleración Electrónico",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0507", "P2101"],
+    "sintomas_clave": ["Revoluciones persistentemente altas en ralentí (1100-1500 RPM)", "El carro se acelera solo"],
+    "compatibilidad": {
+      "marca": "Nissan",
+      "modelo": "Versa",
+      "anios": [2015, 2016, 2017, 2018],
+      "motores": ["1.6L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Pérdida de la calibración de la posición de reposo de la mariposa, comúnmente posterior a una limpieza manual agresiva sin reprogramación.",
+      "gravedad": "Media",
+      "prueba_sugerida": "Ejecutar el procedimiento de 'Aprendizaje de Volumen de Aire en Vacío' (Idle Air Volume Learn) mediante escáner o método manual de pedal."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "16119-1KT1A",
+      "precio_estimado_mxn": 2900.00
+    }
+  },
+  {
+    "id_refaccion": "REF-NIS-008",
+    "componente": "Termostato del Motor",
+    "sistema": "Sistema de Enfriamiento",
+    "codigos_asociados": ["P0128"],
+    "sintomas_clave": ["El testigo azul de motor frío tarda más de 10 minutos en apagarse", "Falta de calefacción óptima"],
+    "compatibilidad": {
+      "marca": "Nissan",
+      "modelo": "Versa",
+      "anios": [2015, 2016, 2017, 2018],
+      "motores": ["1.6L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "El sello de goma perimetral del termostato se desgasta y desasienta, dejando pasar flujo de anticongelante aun estando cerrado.",
+      "gravedad": "Media",
+      "prueba_sugerida": "Escanear la temperatura real del anticongelante; si en carretera desciende de los 75°C, el termostato está permanentemente abierto."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "21200-ED00A",
+      "precio_estimado_mxn": 480.00
+    }
+  },
+  {
+    "id_refaccion": "REF-NIS-009",
+    "componente": "Válvula Canister de Purga (EVAP)",
+    "sistema": "Sistema de Emisiones",
+    "codigos_asociados": ["P0444", "P0445"],
+    "sintomas_clave": ["Encendido inestable después de llenar el tanque de gasolina", "Olor a gases de combustible en el cofre"],
+    "compatibilidad": {
+      "marca": "Nissan",
+      "modelo": "Versa",
+      "anios": [2015, 2016, 2017, 2018],
+      "motores": ["1.6L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Fallo eléctrico en el solenoide actuador de la purga que rompe la comunicación con la computadora de motor.",
+      "gravedad": "Media",
+      "prueba_sugerida": "Medir resistencia en los dos pines de la válvula; debe rondar los 30-40 Ohmios. Si marca infinito, el solenoide está roto por dentro."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "14935-JF00A",
+      "precio_estimado_mxn": 940.00
+    }
+  },
+  {
+    "id_refaccion": "REF-NIS-010",
+    "componente": "Bomba de Gasolina (Módulo Completo)",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0171"],
+    "sintomas_clave": ["Tironeo a altas velocidades (arriba de 100 km/h)", "Le cuesta encender por las mañanas (necesita abrir switch 3 veces)"],
+    "compatibilidad": {
+      "marca": "Nissan",
+      "modelo": "Versa",
+      "anios": [2015, 2016, 2017, 2018],
+      "motores": ["1.6L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Falla en la válvula check de retención interna del módulo de la bomba, lo que hace que la gasolina regrese al tanque al apagar el carro, vaciando las tuberías.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Monitorear la caída de presión en el riel tras apagar el motor; la presión debe sostenerse por al menos 5 minutos."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "17040-3TA0A",
+      "precio_estimado_mxn": 1950.00
+    }
+  },
+  {
+    "id_refaccion": "REF-NIS-011",
+    "componente": "Sensor de Detonación (Knock)",
+    "sistema": "Sistema de Encendido",
+    "codigos_asociados": ["P0327", "P0328"],
+    "sintomas_clave": ["Pérdida de potencia bajo esfuerzo severo", "Sonido de matraca metálica en el motor al acelerar"],
+    "compatibilidad": {
+      "marca": "Nissan",
+      "modelo": "Versa",
+      "anios": [2015, 2016, 2017, 2018],
+      "motores": ["1.6L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Señal de voltaje de retorno excesivamente alta o baja debido a humedad o apriete excesivo en el bloque del motor.",
+      "gravedad": "Media",
+      "prueba_sugerida": "Verificar con torquímetro el torque exacto de instalación del sensor; un apriete erróneo altera por completo su lectura de vibraciones."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "22060-1KT0A",
+      "precio_estimado_mxn": 750.00
+    }
+  },
+  {
+    "id_refaccion": "REF-NIS-012",
+    "componente": "Válvula de Control de Sincronización de Árbol de Levas (VVT Solenoid)",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0011", "P0014"],
+    "sintomas_clave": ["Cascabeleo fuerte en ralentí", "Pérdida drástica de torque a bajas revoluciones"],
+    "compatibilidad": {
+      "marca": "Nissan",
+      "modelo": "Versa",
+      "anios": [2015, 2016, 2017, 2018],
+      "motores": ["1.6L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Galerías internas de la válvula tapadas por sedimentos de aceite quemado por postergar los cambios de lubricante.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Retirar la solenoide e inspeccionar la micro-rejilla de filtrado; si está tupida de lodo, limpiarla y probar activación con 12V externos."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "23796-1KT0A",
+      "precio_estimado_mxn": 1400.00
+    }
+  },
+  {
+    "id_refaccion": "REF-NIS-013",
+    "componente": "Sensor de Temperatura de Aire de Admisión (IAT)",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0112", "P0113"],
+    "sintomas_clave": ["Consumo elevado de combustible", "Estabilidad de marcha deficiente en climas extremos"],
+    "compatibilidad": {
+      "marca": "Nissan",
+      "modelo": "Versa",
+      "anios": [2015, 2016, 2017, 2018],
+      "motores": ["1.6L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Fallo estructural en la resistencia NTC del sensor (nota: viene integrado dentro del sensor MAF de 5 cables).",
+      "gravedad": "Media",
+      "prueba_sugerida": "Verificar la lectura de temperatura de aire en el escáner (debe correlacionarse con la temperatura ambiente si el auto pasó la noche apagado)."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "22680-1MB0A-IAT",
+      "precio_estimado_mxn": 1350.00
+    }
+  },
+  {
+    "id_refaccion": "REF-NIS-014",
+    "componente": "Convertidor Catalítico Integrado a Manifold",
+    "sistema": "Sistema de Emisiones",
+    "codigos_asociados": ["P0420"],
+    "sintomas_clave": ["Encendido constante de luz Check Engine", "Fallo en la prueba de emisiones estatales"],
+    "compatibilidad": {
+      "marca": "Nissan",
+      "modelo": "Versa",
+      "anios": [2015, 2016, 2017, 2018],
+      "motores": ["1.6L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Fatiga de los metales preciosos (Paladio/Platino) del catalizador superior debido a kilometraje avanzado.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Usar un termómetro infrarrojo para medir la temperatura de entrada y salida del catalizador; la salida debe ser sustancialmente más caliente por la reacción química."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "14002-1KT0A",
+      "precio_estimado_mxn": 5900.00
+    }
+  },
+  {
+    "id_refaccion": "REF-NIS-015",
+    "componente": "Sensor de Presión Absoluta del Múltiple (MAP)",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0107", "P0108"],
+    "sintomas_clave": ["El motor avienta explosiones ligeras por la admisión", "Marcha muy torpe o inestable"],
+    "compatibilidad": {
+      "marca": "Nissan",
+      "modelo": "Versa",
+      "anios": [2015, 2016, 2017, 2018],
+      "motores": ["1.6L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Fuga de vacío severa justo en la liga de sello del sensor o daño electrónico en el diafragma piezorresistivo interno.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Revisar que la manguera o puerto de conexión del pleno no esté agrietado y retenga el vacío del motor."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "22365-1TV0A",
+      "precio_estimado_mxn": 1050.00
+    }
+  },
+  {
+    "id_refaccion": "REF-TOY-001",
+    "componente": "Sensor de Flujo de Masa de Aire (MAF)",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0101", "P0171", "P0174"],
+    "sintomas_clave": ["Tironeo rítmico en ralentí", "El motor tarda en responder al acelerar", "Gasto excesivo de combustible"],
+    "compatibilidad": {
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anios": [2014, 2015, 2016, 2017],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Acumulación de suciedad y residuos químicos sobre la micro-resistencia expuesta del sensor de gota clásica de Toyota.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Retirar con cuidado el sensor e inspeccionar la resistencia interna; utilizar limpiador específico para sensores MAF sin tocar el filamento con los dedos."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "22204-0T010",
+      "precio_estimado_mxn": 1450.00
+    }
+  },
+  {
+    "id_refaccion": "REF-TOY-002",
+    "componente": "Bobina de Encendido directas (COP)",
+    "sistema": "Sistema de Encendido",
+    "codigos_asociados": ["P0300", "P0301", "P0302", "P0303", "P0304"],
+    "sintomas_clave": ["El motor vibra bruscamente al detenerse en D", "Pérdida de potencia intermitente al rebasar"],
+    "compatibilidad": {
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anios": [2014, 2015, 2016, 2017],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Fallo en el transistor de potencia integrado dentro de la propia cabeza de la bobina.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Extraer la bobina del cilindro con falla reportada, verificar con multímetro que llegue señal de disparo (IGT) desde la computadora."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "90919-02258",
+      "precio_estimado_mxn": 1100.00
+    }
+  },
+  {
+    "id_refaccion": "REF-TOY-003",
+    "componente": "Bujías de Iridio Genuinas",
+    "sistema": "Sistema de Encendido",
+    "codigos_asociados": ["P0300"],
+    "sintomas_clave": ["Tiempos de marcha ligeramente largos en frío", "Marcha mínima áspera en frío"],
+    "compatibilidad": {
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anios": [2014, 2015, 2016, 2017],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Erosión microscópica del centro de iridio tras rebasar las 100,000 km recomendadas de uso continuo.",
+      "gravedad": "Media",
+      "prueba_sugerida": "Revisar la calibración de la bujía con un calibrador de alambre fino especial; la tolerancia original es típicamente de 0.044 pulgadas."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "SC20HR11",
+      "precio_estimado_mxn": 1400.00
+    }
+  },
+  {
+    "id_refaccion": "REF-TOY-004",
+    "componente": "Válvula de Control de Aceite de Sincronización Variable (VVT-i)",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0011", "P0012", "P0016"],
+    "sintomas_clave": ["Ruido de matraca o diésel en la parte superior del motor al encender", "Ralentí tembloroso"],
+    "compatibilidad": {
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anios": [2014, 2015, 2016, 2017],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Atascamiento mecánico del émbolo de la solenoide debido al uso de aceites de viscosidad incorrecta (este motor requiere rigurosamente 0W-20 o 5W-30 sintético).",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Escanear el avance real del árbol de levas; si se queda fijo en 0 grados al acelerar a 2500 RPM, la solenoide no se está desplazando."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "15330-0T010",
+      "precio_estimado_mxn": 1550.00
+    }
+  },
+  {
+    "id_refaccion": "REF-TOY-005",
+    "componente": "Sensor de Oxígeno Delantero (Air-Fuel Ratio Sensor)",
+    "sistema": "Sistema de Emisiones",
+    "codigos_asociados": ["P2195", "P0171"],
+    "sintomas_clave": ["Aumento drástico en consumo de gasolina", "Respuestas tardías del motor en rebases"],
+    "compatibilidad": {
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anios": [2014, 2015, 2016, 2017],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Sensor atascado leyendo una condición permanentemente pobre ('Lean Lean'), obligando a la computadora a inyectar gasolina de más de forma errónea.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Verificar la corriente en miliamperios (mA) del sensor A/F en el flujo de datos; debe oscilar muy cerca de 0.0 mA en condiciones estables."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "89467-12240",
+      "precio_estimado_mxn": 2700.00
+    }
+  },
+  {
+    "id_refaccion": "REF-TOY-006",
+    "componente": "Convertidor Catalítico Integrado",
+    "sistema": "Sistema de Emisiones",
+    "codigos_asociados": ["P0420"],
+    "sintomas_clave": ["Luz Check Engine encendida de forma permanente", "Humo de escape con olor inusual"],
+    "compatibilidad": {
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anios": [2014, 2015, 2016, 2017],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Pérdida de la eficiencia de conversión de gases nocivos debido a contaminación por silicio o vejez del elemento cerámico.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Comparar lecturas de gases mediante un analizador o verificar el historial de códigos P0300 que hayan derretido el panal."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "25051-0T090",
+      "precio_estimado_mxn": 7200.00
+    }
+  },
+  {
+    "id_refaccion": "REF-TOY-007",
+    "componente": "Bomba de Agua del Motor",
+    "sistema": "Sistema de Enfriamiento",
+    "codigos_asociados": ["P0117", "P2610"],
+    "sintomas_clave": ["Ruido de chillido o rodamiento áspero bajo el cofre", "Manchas de anticongelante rosa (Super Long Life) alrededor de las poleas"],
+    "compatibilidad": {
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anios": [2014, 2015, 2016, 2017],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Fallo prematuro en el sello mecánico central del eje de la polea de la bomba de agua, provocando filtración de líquido hacia los baleros.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Inspeccionar visualmente el orificio de purga (weep hole) de la bomba buscando rastros secos de anticongelante cristalizado color rosa."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "16100-39466",
+      "precio_estimado_mxn": 1850.00
+    }
+  },
+  {
+    "id_refaccion": "REF-TOY-008",
+    "componente": "Empaque de Múltiple de Admisión",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0171", "P0505"],
+    "sintomas_clave": ["El auto tiembla mucho al encender en mañanas frías", "Las revoluciones bajan a lo normal una vez caliente"],
+    "compatibilidad": {
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anios": [2014, 2015, 2016, 2017],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "El empaque original de plástico naranja se vuelve rígido y se encoge con el frío extremo, permitiendo la entrada de aire parásito que descalibra la mezcla aire/combustible.",
+      "gravedad": "Media",
+      "prueba_sugerida": "Rociar una cantidad moderada de limpiador de carburadores alrededor de las uniones del múltiple en frío; si las RPM varían abruptamente, hay una fuga de vacío ahí."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "17171-22060",
+      "precio_estimado_mxn": 290.00
+    }
+  },
+  {
+    "id_refaccion": "REF-TOY-009",
+    "componente": "Cuerpo de Aceleración Electrónico ETCS-i",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P2111", "P2112", "P2118"],
+    "sintomas_clave": ["Luz de falla encendida", "El motor se queda atascado a un máximo de 1500 RPM sin importar cuánto pises el pedal"],
+    "compatibilidad": {
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anios": [2014, 2015, 2016, 2017],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Fallo en el fusible exclusivo del ETCS o daño directo en el motor eléctrico de corriente continua encargado de abrir el engrane de la mariposa.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Comprobar primero el fusible de protección del circuito del acelerador electrónico ubicado en la caja de fusibles del vano motor."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "22030-0T010",
+      "precio_estimado_mxn": 3400.00
+    }
+  },
+  {
+    "id_refaccion": "REF-TOY-010",
+    "componente": "Sensor de Posición del Cigüeñal (CKP)",
+    "sistema": "Sistema de Encendido",
+    "codigos_asociados": ["P0335"],
+    "sintomas_clave": ["El carro da marcha vigorosa pero jamás arranca", "Se corta la corriente por completo de golpe al circular"],
+    "compatibilidad": {
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anios": [2014, 2015, 2016, 2017],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Pérdida de la señal magnética de RPM enviada a la ECU por agrietamiento estructural del captador.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Conectar escáner y revisar el parámetro de RPM del motor mientras se da marcha; si se mantiene firmemente en 0, la ECU no detecta movimiento físico por culpa del CKP."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "90919-05087",
+      "precio_estimado_mxn": 950.00
+    }
+  },
+  {
+    "id_refaccion": "REF-TOY-011",
+    "componente": "Termostato Integrado con Carcasa",
+    "sistema": "Sistema de Enfriamiento",
+    "codigos_asociados": ["P0128"],
+    "sintomas_clave": ["Aparece aviso en el tablero de motor frío por demasiado tiempo", "El ventilador entra antes de tiempo"],
+    "compatibilidad": {
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anios": [2014, 2015, 2016, 2017],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "El resorte calibrado del termostato perdió tensión estructural y abre de manera prematura a temperaturas inferiores a los 82°C.",
+      "gravedad": "Media",
+      "prueba_sugerida": "Monitorear la línea de datos con escáner para certificar si el refrigerante logra estabilizarse por encima de los 85°C bajo manejo normal."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "16325-0T020",
+      "precio_estimado_mxn": 780.00
+    }
+  },
+  {
+    "id_refaccion": "REF-TOY-012",
+    "componente": "Válvula de Purga de Canister (EVAP Solenoid)",
+    "sistema": "Sistema de Emisiones",
+    "codigos_asociados": ["P0441", "P0456"],
+    "sintomas_clave": ["Check Engine encendido", "Ligeras variaciones de marcha mínima aleatorias"],
+    "compatibilidad": {
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anios": [2014, 2015, 2016, 2017],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Pequeños trozos de carbón activado del Canister viajaron por la tubería y bloquearon el sello hermético de la válvula en el cofre.",
+      "gravedad": "Media",
+      "prueba_sugerida": "Desmontar e intentar soplar a través de las boquillas de la válvula; debe obstruir el aire por completo si no recibe energía."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "25860-0T010",
+      "precio_estimado_mxn": 1120.00
+    }
+  },
+  {
+    "id_refaccion": "REF-TOY-013",
+    "componente": "Bomba de Combustible (Repuesto Interno)",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0171"],
+    "sintomas_clave": ["El vehículo pierde fuerza notablemente al subir puentes o pendientes", "Arranca al segundo o tercer intento prolongado"],
+    "compatibilidad": {
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anios": [2014, 2015, 2016, 2017],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Desgaste de las escobillas del motor de la bomba de combustible, disminuyendo las revoluciones de la turbina interna y bajando el flujo de volumen.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Efectuar una prueba de volumen de combustible colectando la gasolina en una probeta calibrada durante 30 segundos activando el relevador."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "23221-0T110",
+      "precio_estimado_mxn": 1300.00
+    }
+  },
+  {
+    "id_refaccion": "REF-TOY-014",
+    "componente": "Inyector de Gasolina multipuerto",
+    "sistema": "Inyección de Combustible",
+    "codigos_asociados": ["P0201", "P0301"],
+    "sintomas_clave": ["Fallo de encendido fijo en un solo cilindro", "Olor a gasolina quemada de manera deficiente"],
+    "compatibilidad": {
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anios": [2014, 2015, 2016, 2017],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Barniz de combustible acumulado bloqueando las microperforaciones de la tobera del inyector, alterando el patrón de atomización.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Montar los inyectores en un laboratorio de diagnóstico por ultrasonido y corroborar que la entrega de volumen sea simétrica en las cuatro probetas."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "23209-39145",
+      "precio_estimado_mxn": 1600.00
+    }
+  },
+  {
+    "id_refaccion": "REF-TOY-015",
+    "componente": "Sensor de Posición de Árbol de Levas (CMP VVT)",
+    "sistema": "Sistema de Encendido",
+    "codigos_asociados": ["P0340", "P0345"],
+    "sintomas_clave": ["El motor tarda en estabilizarse tras el arranque", "Luz de avería encendida en tablero"],
+    "compatibilidad": {
+      "marca": "Toyota",
+      "modelo": "Corolla",
+      "anios": [2014, 2015, 2016, 2017],
+      "motores": ["1.8L L4"]
+    },
+    "diagnostico_experto": {
+      "causa_raiz": "Falla o degradación del devanado captor interno encargado de leer los dientes del engrane del árbol.",
+      "gravedad": "Alta",
+      "prueba_sugerida": "Comprobar que el voltaje de señal varíe de forma limpia al girar el motor, usando un escáner gráfico o un osciloscopio automotriz."
+    },
+    "info_refaccion": {
+      "numero_parte_ejemplo": "90919-05060",
+      "precio_estimado_mxn": 880.00
+    }
+  }
+]
