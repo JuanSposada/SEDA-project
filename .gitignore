@@ -3,3 +3,4 @@ __pycache__/
 data/manuales/*
 data/source-data/
 chroma_db/
+.env
