@@ -2,7 +2,7 @@ import streamlit as st
 # Importamos las funciones lógicas de tu script anterior
 from huggin_hibrido import cargar_base_conocimiento, recuperar_contexto_semantico, generar_respuesta_sistema_experto
 
-# Configuración de la página web
+# Configuración de la página webns
 st.set_page_config(page_title="SEDA - Sistema Experto", page_icon="🚗", layout="centered")
 
 # Encabezado principal
