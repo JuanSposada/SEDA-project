@@ -7,24 +7,35 @@ import asyncio
 TOOL # 1 Herramienta para consulta en base de datos local de dtc_codes.db
 """
 @tool
-def tool_consulta_db_dtc(codigo_y_marca: str) -> str:
+def tool_consulta_db_dtc(codigo: str, marca: str) -> str:
     """
-    Busca la definicon e interpretacion tecnica exacta de codigo de falla OBD-II
-    Entrada: coigo estandar de 5 caracteres"""
-    partes = [p.strip() for p in codigo_y_marca.split(",")]
-    codigo_limpio = partes[0].upper()
-    marca_limpio = partes[1].upper()
+    Busca la definición e interpretación técnica exacta de un código de falla OBD-II (DTC) en la base de datos local.
+    
+    Parámetros:
+      - codigo: El código de falla estándar de 5 caracteres (ej. 'P1106', 'P0300').
+      - marca: La marca del vehículo (ej. 'Acura', 'Honda', 'Toyota'). Solo el nombre del fabricante.
+    """
+    marca_limpia = marca.strip().split()[0].upper() if marca else ""
+    codigo_limpio = codigo.strip().upper()
     try:
         conn = sqlite3.connect('data/dtc_codes.db')
         cursor = conn.cursor()
 
         cursor.execute(
             "SELECT code, manufacturer, description, type FROM dtc_definitions WHERE code = ? and manufacturer = ? LIMIT 1",
-            (codigo_limpio, marca_limpio)
+            (codigo_limpio, marca_limpia)
         )
         resultado = cursor.fetchone()
+        
+        
+        if not resultado:
+            cursor.execute(
+                "SELECT code, manufacturer, description, type FROM dtc_definitions WHERE code = ? LIMIT 1",
+                (codigo_limpio,)
+            )
+            resultado = cursor.fetchone()
         conn.close()
-
+        
         if resultado:
             code, fabricante, descripcion, tipo = resultado
             return (f"-- Resultado DB Local --\n"
@@ -34,7 +45,7 @@ def tool_consulta_db_dtc(codigo_y_marca: str) -> str:
                     f"Tipo de Sistema {tipo}"
                     )
         else:
-            return f"[Resultado DB local] el codigo {codigo_limpio} no se encontro en el catalogo de definiciones existente"
+            return f"[Resultado DB local] el codigo {codigo} no se encontro en el catalogo de definiciones existente"
         
     except Exception as e:
         return f"Error al consultar la base de datos relacional: {str(e)}"
@@ -83,7 +94,7 @@ def tool_busqueda_rockauto(datos_vehiculo_y_categoria: str) -> str:
     """
     Busca componentes y precios reales en RockAuto.com navegando su API interna.
     Entrada esperada: Una cadena exacta con 'Marca, Año, Modelo, Categoría' 
-    (ej. 'Toyota, 2020, Camry, Brake & Wheel Hub' o 'Scion, 2004, xB, Ignition').
+    (ej. 'Toyota, 2020, Camry, Brake & Wheel Hub' o 'Acura, 2000, TL, Fuel & Air').
     """
     partes = [p.strip() for p in datos_vehiculo_y_categoria.split(",")]
     if len(partes) < 4:

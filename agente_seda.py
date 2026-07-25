@@ -1,94 +1,115 @@
 import sys
+import json
 sys.path.append('.')
 
 from langchain_ollama import ChatOllama
-from langchain.agents import create_agent
 from herramientas_seda import tool_busqueda_rockauto, tool_consulta_db_dtc
 
-def inicializar_agente_seda():
-    print("[CONFIG] Cargando herramientas y modelo local (Ollama)")
+def inicializar_modelos():
+    print("[CONFIG] Cargando motores de inferencia y herramientas...")
+    #Modelo 1: Estricto, solo devuelve JSON para la extraccion de datos para las siguientes consultas que utilizaran las tools
+    llm_json = ChatOllama(model="qwen2.5:3b", temperature=0.0, format="json")
 
-    # Difiniendo el modelo local
-    llm = ChatOllama(model="qwen2.5", temperature=0.1).bind_tools([
-        tool_consulta_db_dtc, 
-        tool_busqueda_rockauto
-    ])
+    #Modelo 2: Cretativo, devuelve texto normal para poder redactar el reporte final
+    llm_texto = ChatOllama(model="qwen2.5:3b", temperature=0.2)
 
-    return llm
+    return llm_json, llm_texto
 
-def ejecutar_agente(llm, consulta_usuario):
+def pipeline_diagnostico_seda(llm_json, llm_texto, consulta_usuario):
+    print("\n--- [FASE 1] Extracción de Datos del Vehículo ---")
+    prompt_extraccion = f"""
+    Extrae la información del vehículo de la siguiente consulta.
+    REGLA ESTRICTA: 'marca' es el fabricante (ej. Acura, Honda, Nissan). 'modelo' es el nombre del carro (ej. TL, Civic, Sentra).
+    Si el usuario dice "Acura TL", marca="Acura", modelo="TL".
+    
+    Consulta: "{consulta_usuario}"
+    
+    Responde ÚNICAMENTE con un objeto JSON con las llaves: "codigo", "marca", "modelo", "anio".
+    """
+    
+    res_extraccion = llm_json.invoke(prompt_extraccion)
+    datos = json.loads(res_extraccion.content)
+    
+    #Si el LLM falla en separar marca y modelo se extrae del mismo
+    marca = datos.get("marca", "").strip()
+    modelo = datos.get("modelo", "").strip()
+    if not marca and " " in modelo:
+        marca, modelo = modelo.split(" ", 1)
+        datos["marca"] = marca
+        datos["modelo"] = modelo
+    
+    print(f"Datos extraídos: {datos}")
 
-    tools = {
-        "tool_consulta_db_dtc": tool_consulta_db_dtc,
-        "tool_busqueda_rockauto": tool_busqueda_rockauto
-    }
-    print(f"\n[PENSANDO] Evaluando herramientas para la consulta...")
-    respuesta_llm = llm.invoke(consulta_usuario)
+    print("\n--- [FASE 2] Consulta a Base de Datos Local ---")
 
-    if respuesta_llm.tool_calls:
-        print(f"[ACCION] El modelo decidió usar herramientas.")
-        resultados_contexto = []
+    # Ejecutamos la herramienta con los datos limpios extraídos
+    info_dtc = tool_consulta_db_dtc.invoke({
+        "codigo": datos.get("codigo", ""),
+        "marca": datos.get("marca", "")
+    })
 
-        for call in respuesta_llm.tool_calls:
-            nombre_tool = call["name"]
-            argumentos = call["args"]
+    print(info_dtc.split('\n')[1]) # Imprime solo un resumen para la consola
 
-            if nombre_tool in tools:
-                print(f" -> Ejecutando {nombre_tool} con argumentos: {argumentos}")
+    print("\n--- [FASE 3] Deducción de Categoría para RockAuto ---")
 
-                if nombre_tool == "tool_consulta_db_dtc":
-                    valor_arg = list(argumentos.values())[0] if argumentos else "P1106, Acura"
-                    if "," not in str(valor_arg):
-                        valor_arg = f"{valor_arg}, Acura"
-                    res_tool = tools[nombre_tool].invoke(valor_arg)
+    prompt_categoria = f"""
+    Basado en el siguiente diagnóstico (DTC), determina la categoría EXACTA para RockAuto.
+    Usa estrictamente UNA de las siguientes opciones:
+    - "Fuel & Air" (Para problemas de aire, presión atmosférica, BARO, MAP, MAF, inyectores de combustible).
+    - "Ignition" (Para bobinas, bujías, fallos de encendido/misfire).
+    - "Engine" (Para componentes mecánicos del bloque del motor, pistones).
+    - "Cooling & Heating" (Para radiador, refrigerante, termostato).
+    - "Exhaust & Emission" (Para sensores de oxígeno O2, catalizador).
+    
+    Descripción del DTC: {info_dtc}
+    
+    Responde ÚNICAMENTE con un objeto JSON con la llave "categoria".
+    """
+    res_categoria = llm_json.invoke(prompt_categoria)
+    categoria = json.loads(res_categoria.content).get("categoria", "")
+    print(f"Categoría deducida: {categoria}")
 
-                elif nombre_tool == "tool_busqueda_rockauto":
-                    try:
-                        res_tool = tools[nombre_tool].invoke(argumentos)
-                    except:
-                        valor_arg = ", ".join([str(v) for v in argumentos.values()])
-                        res_tool = tools[nombre_tool].invoke(valor_arg)
+    print("\n--- [FASE 4] Búsqueda de Refacciones en API ---")
+    # TÚ controlas el formato, no el LLM. Garantizamos que sea exactamente lo que la tool espera:
+    query_rockauto = f"{datos.get('marca')}, {datos.get('anio')}, {datos.get('modelo')}, {categoria}"
+    print(f"Query construida: '{query_rockauto}'")
 
-                else:
-                    res_tool = tools[nombre_tool].invoke(argumentos)
-                
-                resultados_contexto.append(f"Resultado de {nombre_tool}: {res_tool}")
+    info_refacciones = tool_busqueda_rockauto.invoke(query_rockauto)
 
-        # Inferencia final con el contexto recolectado
-        prompt_final = f"""
-        Eres SEDA (Sistema Experto de Diagnóstico Automotriz). Responde al usuario en español basándote estrictamente en los siguientes datos obtenidos del sistema:
-        
-        Datos obtenidos:
-        {chr(10).join(resultados_contexto)}
-        
-        Consulta original del usuario:
-        {consulta_usuario}
-        """
-        print(f"[PROCESANDO] Generando diagnóstico final...")
+    print("\n--- [FASE 5] Generación de Reporte Final ---")
+    prompt_final = f"""
+    Eres SEDA, un Sistema Experto de Diagnóstico Automotriz profesional.
+    
+    REGLA DE ORO: PROHIBIDO INVENTAR O ALUCINAR DIAGNÓSTICOS. Tu respuesta debe basarse 100% en los "Datos Extraídos" proporcionados abajo. Si la información no menciona refrigeración, NO hables de refrigeración.
+    
+    DATOS EXTRAÍDOS DEL SISTEMA:
+    
+    - Vehículo: {datos.get('marca')} {datos.get('modelo')} {datos.get('anio')}
+    - Falla reportada: {datos.get('codigo')}
+    - Diagnóstico Oficial: {info_dtc}
+    - Refacciones Encontradas: {info_refacciones}
+    
+    Consulta original del usuario: "{consulta_usuario}"
+    
+    Redacta un diagnóstico estructurado en: 1. Significado Técnico del Código, 2. Qué revisar, y 3. Refacciones sugeridas (con precios si los hay).
+    """
 
-        diagnostico = ChatOllama(model="qwen2.5", temperature=0.1).invoke(prompt_final)
-        return diagnostico.content
-    else:
-        return respuesta_llm.content
+    respuesta_final = llm_texto.invoke(prompt_final)
 
+    return respuesta_final.content
 
 if __name__ == "__main__":
-    agente = inicializar_agente_seda()
-
-    print("\n==================================================")
-    consulta = (
-        "Tengo un auto Acura con el código de falla P1106. "
-        "¿Qué significa y qué componentes puedo revisar en un Scion xB 2004 en la categoría de Ignition?"
-    )
-    print(f" Lanzando consulta de pruena: \n'{consulta}")
-    print("==================================================\n")
+    llm_json, llm_texto = inicializar_modelos()
+    consulta_prueba = "Tengo un Acura TL 2000 con el código de falla P1106. ¿Qué significa y qué repuestos necesito?"
+    print("\n" + "="*50)
+    print(f" Lanzando consulta: '{consulta_prueba}'")
+    print("="*50)
 
     try:
-        respuesta = ejecutar_agente(agente, consulta)
-        print("\n==================================================")
+        diagnostico = pipeline_diagnostico_seda(llm_json, llm_texto, consulta_prueba)
+        print("\n" + "="*50)
         print("                 RESPUESTA FINAL                  ")
-        print("==================================================")
-        print(respuesta)
-    
+        print("="*50)
+        print(diagnostico)
     except Exception as e:
-        print(f"\nError durante la ejecucion del Agente: {str(e)}")
+        print(f"\n❌ Error durante el pipeline: {str(e)}")
