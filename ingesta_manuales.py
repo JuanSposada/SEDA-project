@@ -1,5 +1,5 @@
 import os
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceBgeEmbeddings
 from langchain_community.vectorstores import Chroma
@@ -16,22 +16,25 @@ def procersar_y_guardar_manuales():
     documentos_cargados = []
 
     # Cargar los pdf
-    print("Buscando manuales tecnicos en la carpeta /data/manuales ...")
-    for archivo in os.listdir(directorio_data):
-        if archivo.endswith(".pdf"):
-            ruta_completa = os.path.join(directorio_data, archivo)
-            print(f"-> Cargando de forma secuencial: {archivo}")
-            try:
-                loader = PyPDFLoader(ruta_completa)
-                documentos_cargados.extend(loader.load())
-            except Exception as e:
-                print(f"No se pudo cargar el archigo {archivo}. Error")
+    print("Buscando manuales tecnicos recursivamente en la carpeta /data/manuales y subcarpetas...")
+
+    loader = DirectoryLoader(
+        directorio_data,
+        glob="**/*.pdf",
+        loader_cls=PyPDFLoader,
+        show_progress=True
+    )
+
+    try:
+        documentos_cargados = loader.load()
+        print(f"Total de documentos cargados: {len(documentos_cargados)}")
+    except Exception as e:
+        print(f"Error al cargar los documentos: {e}")
+        return
 
     if not documentos_cargados:
-        print("No se econtraromn manuales pdf en la carpeta /data/manuales")
-
-    print(f"\nTotal de paginas extraidas y cargadas en memoria: {len(documentos_cargados)}")
-
+        print("No se encontraron documentos PDF en la carpeta especificada.")
+        return
 
     # Text splitter, para semegmetacion semantica, ajustamos los chunks con 700 caracteres
     # y un overlap de 120
