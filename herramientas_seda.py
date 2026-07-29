@@ -5,6 +5,10 @@ from langchain.tools import tool
 from vininfo import Vin
 from rockauto_api import RockAutoClient
 from langchain_community.tools import DuckDuckGoSearchResults
+from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import HuggingFaceBgeEmbeddings
+
+
 
 """
 TOOL # 1 Herramienta para consulta en base de datos local de dtc_codes.db
@@ -276,3 +280,45 @@ def tool_buscar_refaccion_web(datos_vehiculo_y_pieza: str) -> str:
 
     except Exception as e:
         return f"[Buscador Web] Error al realizar la búsqueda: {str(e)}"
+
+
+@tool
+def tool_consultar_manuales(query: str) -> str:
+    """
+    Busca información técnica, de diagnóstico, procedimientos o voltajes en los manuales de taller locales (PDFs).
+    Entrada esperada: Una consulta muy específica con la marca, modelo, y el componente o código.
+    Ejemplo: 'Acura TL 2000 diagnóstico Sensor MAP P1106 voltajes'
+    """
+
+    print("[Sistema] Cargando modelo de Embeddings para Manuales Locales...")
+    modelo_embeddings = HuggingFaceBgeEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+    # 2. Conectar a la base de datos vectorial existente
+    vector_store = Chroma(persist_directory="./chroma_db", embedding_function=modelo_embeddings)
+
+    print(f"\n[RAG] Buscando en los manuales locales para la consulta: '{query}'...")
+
+    try:
+        # Se extraen llos 3 fragmentos de PDF que más se asemejan a la consulta del usuario
+        resultados = vector_store.similarity_search(query, k=3)
+
+        if not resultados:
+            return f"[RAG] No se encontraron fragmentos relevantes en los manuales locales para la consulta: '{query}'."
+
+        texto_recuperado = "[EXTRACTO DE MANUALES LOCALES]\n\n"
+
+        for i, doc in enumerate(resultados):
+            # Extraccion de metadata para identificar de que PDF y de que pagina Viene la informacion
+            fuente = doc.metadata.get("source", " Manual Desconocido")
+            pagina = doc.metadata.get("page", "Página Desconocida")
+
+            #Limpiamos para que no mujestre la ruta del disco
+            nombre_archivo = fuente.split("/")[-1].split("\\")[-1]
+
+            texto_recuperado += f"--- Extracto {i+1} (Fuente: {nombre_archivo}, página: {pagina}) ---\n"
+            texto_recuperado += f"{doc.page_content}\n\n"
+
+        return texto_recuperado
+
+    except Exception as e:
+        return f"[RAG] Error al buscar en los manuales locales: {str(e)}"
