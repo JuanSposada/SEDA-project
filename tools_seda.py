@@ -300,7 +300,7 @@ def tool_consultar_manuales(query: str) -> str:
 
     try:
         # Se extraen llos 3 fragmentos de PDF que más se asemejan a la consulta del usuario
-        resultados = vector_store.similarity_search(query, k=3)
+        resultados = vector_store.similarity_search(query, k=10)
 
         if not resultados:
             return f"[RAG] No se encontraron fragmentos relevantes en los manuales locales para la consulta: '{query}'."

@@ -3,8 +3,11 @@ from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceBgeEmbeddings
 from langchain_community.vectorstores import Chroma
+from dotenv import load_dotenv
 
-def procersar_y_guardar_manuales():
+load_dotenv()
+
+def procesar_y_guardar_manuales():
     #Definir rutas de origen
     directorio_data = "./data/manuales"
     directorio_vectorial = "./chroma_db"

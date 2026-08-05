@@ -3,10 +3,9 @@ import json
 sys.path.append('.')
 
 from langchain_ollama import ChatOllama
-from herramientas_seda import tool_busqueda_rockauto, tool_consulta_db_dtc
+from tools_seda import tool_busqueda_rockauto, tool_consulta_db_dtc, tool_buscar_refaccion_web, tool_consultar_manuales, tool_decodificar_vin
 
 LLM_MODEL = "qwen2.5:3b"  # Modelo de inferencia para el pipeline
-
 def inicializar_modelos():
     print(f"[CONFIG] Cargando motores de inferencia({LLM_MODEL}) y herramientas...")
     #Modelo 1: Estricto, solo devuelve JSON para la extraccion de datos para las siguientes consultas que utilizaran las tools
