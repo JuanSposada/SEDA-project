@@ -1,4 +1,4 @@
-from tools_seda import tool_decodificar_vin
+from utils.tools_seda import tool_decodificar_vin
 
 def ejecutar_pruebas():
     print("==================================================")

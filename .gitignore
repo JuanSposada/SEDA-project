@@ -4,3 +4,5 @@ data/manuales/*
 data/source-data/
 chroma_db/
 .env
+data/seda_diagnostico.db
+data/source-data

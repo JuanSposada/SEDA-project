@@ -3,130 +3,148 @@ import json
 sys.path.append('.')
 
 from langchain_ollama import ChatOllama
-from tools_seda import tool_busqueda_rockauto, tool_consulta_db_dtc, tool_buscar_refaccion_web, tool_consultar_manuales, tool_decodificar_vin
+from utils.tools_seda import (
+    tool_consulta_db_dtc, 
+    tool_buscar_refaccion_web, 
+    tool_consultar_manuales,
+    tool_decodificar_vin
+)
+from utils.llm_manager import obtener_llm
 
-LLM_MODEL = "qwen2.5:3b"  # Modelo de inferencia para el pipeline
-def inicializar_modelos():
-    print(f"[CONFIG] Cargando motores de inferencia({LLM_MODEL}) y herramientas...")
-    #Modelo 1: Estricto, solo devuelve JSON para la extraccion de datos para las siguientes consultas que utilizaran las tools
-    llm_json = ChatOllama(model=LLM_MODEL, temperature=0.0, format="json")
-
-    #Modelo 2: Cretativo, devuelve texto normal para poder redactar el reporte final
-    llm_texto = ChatOllama(model=LLM_MODEL, temperature=0.1)
-
-    return llm_json, llm_texto
-
-def pipeline_diagnostico_seda(llm_json, llm_texto, consulta_usuario):
-    print("\n--- [FASE 1] Extracción de Datos del Vehículo ---")
-    prompt_extraccion = f"""
-    Extrae la información del vehículo de la siguiente consulta.
-    REGLA ESTRICTA: 'marca' es el fabricante (ej. Acura, Honda, Nissan). 'modelo' es el nombre del carro (ej. TL, Civic, Sentra).
-    Si el usuario dice "Acura TL", marca="Acura", modelo="TL".
-    
-    Consulta: "{consulta_usuario}"
-    
-    Responde ÚNICAMENTE con un objeto JSON con las llaves: "codigo", "marca", "modelo", "anio".
-    """
-    
-    res_extraccion = llm_json.invoke(prompt_extraccion)
-    datos = json.loads(res_extraccion.content)
-    
-    #Si el LLM falla en separar marca y modelo se extrae del mismo
-    marca = datos.get("marca", "").strip()
-    modelo = datos.get("modelo", "").strip()
-    if not marca and " " in modelo:
-        marca, modelo = modelo.split(" ", 1)
-        datos["marca"] = marca
-        datos["modelo"] = modelo
-    
-    print(f"Datos extraídos: {datos}")
-
-    print("\n--- [FASE 2] Consulta a Base de Datos Local ---")
-
-    # Ejecutamos la herramienta con los datos limpios extraídos
-    info_dtc = tool_consulta_db_dtc.invoke({
-        "codigo": datos.get("codigo", ""),
-        "marca": datos.get("marca", "")
-    })
-
-    print(info_dtc.split('\n')[1]) # Imprime solo un resumen para la consola
-
-    # Preduagnostico para que el modelo no alucine al buscar las refacciones y se base en la información extraida del DTC y no en suposiciones
-    print("\n--- [FASE 3] Identificación del Componente Defectuoso ---")
-    prompt_analisis = f"""
-    Eres un analizador técnico automotriz estricto. Tu tarea es extraer e identificar el nombre técnico exacto de la refacción o sensor físico en inglés.
-
-    DICCIONARIO TÉCNICO DE REFERENCIA:
-    - "BARO" o "Barometric" -> "MAP Sensor"
-    - "MAF" o "Mass Air Flow" -> "MAF Sensor"
-    - "O2" o "HO2S" -> "Oxygen Sensor"
-    - "EGR" -> "EGR Valve"
-    - "CKP" -> "Crankshaft Position Sensor"
-    - "CMP" -> "Camshaft Position Sensor"
-    - "TPS" -> "Throttle Position Sensor"
-
-    Texto a analizar: "{info_dtc}"
-
-    Responde ÚNICAMENTE con un objeto JSON con la llave "componente" especificando el nombre de la pieza en inglés.
-    Ejemplo: {{"componente": "MAP Sensor"}}
-    """
-    res_analisis = llm_json.invoke(prompt_analisis)
-    analisis_mecanico = json.loads(res_analisis.content)
-    componente_detectado = analisis_mecanico.get("componente", "MAP Sensor")
-    print(f"-> Componente aislado por el LLM: {componente_detectado}")
-          
-    print("\n--- [FASE 4] Búsqueda de Refacciones en API ---")
-    
-    # TÚ controlas el formato, no el LLM. Garantizamos que sea exactamente lo que la tool espera:
-    query_rockauto = f"{datos.get('marca')}, {datos.get('anio')}, {datos.get('modelo')}, {componente_detectado}"
-    print(f"Query construida: '{query_rockauto}'")
-
-    info_refacciones = tool_busqueda_rockauto.invoke(query_rockauto)
-
-    print("\n--- [FASE 5] Generación de Reporte Final ---")
-    prompt_final = f"""
-    Eres SEDA, un Sistema Experto de Diagnóstico Automotriz.
-    
-    INFORMACIÓN OFICIAL DEL SISTEMA:
-    - Vehículo: {datos.get('marca')} {datos.get('modelo')} {datos.get('anio')}
-    - Código DTC: {datos.get('codigo')}
-    - Descripción Oficial: {info_dtc}
-    - Componente Defectuoso: {componente_detectado}
-    - Resultado de Refacciones en RockAuto:
-      {info_refacciones}
-    
-    REGLAS DE ORO (INVIOLABLES):
-    1. El código P1106 en Acura/Honda corresponde al sensor de presión barométrica / colector (BARO / MAP Sensor). NO TIENE NADA QUE VER CON SISTEMAS DE FRENOS O ABS.
-    2. SI "Resultado de Refacciones" contiene "Error" o "No se localizó", DEBES DECLARAR EXPRESAMENTE: "No se encontraron refacciones disponibles en línea para este modelo."
-    3. ¡QUEDA ESTRICTAMENTE PROHIBIDO INVENTAR NOMBRES DE RECAMBIOS O ENLACES URL! Solo copia los enlaces que aparezcan textualmente dentro del resultado de RockAuto. Si no hay enlaces en el resultado, NO generes ningún enlace.
-    4. Responde en español profesional.
-    
-    Consulta original del usuario: "{consulta_usuario}"
-    
-    Redacta un diagnóstico estructurado en: 
-    1. Significado Técnico del Código 
-    2. Componente Defectuoso e Importancia
-    3. Síntomas comunes
-    4. Qué revisar en el taller
-    5. Refacciones sugeridas (con enlaces exactos del sistema si los hay).
-    """
-
-    respuesta_final = llm_texto.invoke(prompt_final)
-
-    return respuesta_final.content
-
-if __name__ == "__main__":
-    llm_json, llm_texto = inicializar_modelos()
-    consulta_prueba = "Tengo un Acura TL 2000 con el código de falla P1106. ¿Qué significa y qué repuestos necesito?"
+def collect_vehicle_data() -> dict:
     print("\n" + "="*50)
-    print(f" Lanzando consulta: '{consulta_prueba}'")
+    print("SISTEMA SEDA - INGRESO DE DATOS")
     print("="*50)
 
+    has_vin = input("¿Cuentas con el número VIN del vehículo? (S/N): ").strip().upper()
+
+    year, make, model = "", "", ""
+    vin_details = "No disponible"
+
+    if has_vin == 'S':
+        vin = input("Ingresa los 17 caracteres del VIN: ").strip().upper()
+        print("[Sistema] Decodificando VIN, por favor espera...")
+
+        vin_results = tool_decodificar_vin.invoke(vin)
+
+        if "error" not in vin_results:
+            make = vin_results.get("make", "")
+            model = vin_results.get("model", "")
+            year = vin_results.get("year", "")
+            vin_details = json.dumps(vin_results.get("details", {}), indent=2)
+        
+            print(f"\nVIN detectado exitosamente ({vin_results.get('estatus')})")
+            print(f"Auto-detectado: {year} {model} {make}")
+
+            # Solo pedimos los datos que hayan quedado vacíos (ej. si fue offline)
+            if not year: year = input("No se detectó el Año. Ingresa el Año: ").strip()
+            if not make: make = input("No se detectó la Marca. Ingresa la Marca: ").strip()
+            if not model: model = input("No se detectó el Modelo. Ingresa el Modelo: ").strip()
+        else:
+            print(f"{vin_results['error']}")
+            # Fallback manual si el VIN era inválido
+            year = input("Ingresa el Año: ").strip()
+            make = input("Ingresa la Marca: ").strip()
+            model = input("Ingresa el Modelo: ").strip()
+
+    dtc_code = input("\nIngresa el Código de Falla (Ej. P1106): ").strip().upper()
+
+    return {
+        "year": year,
+        "make": make,
+        "model": model,
+        "dtc_code": dtc_code,
+        "vin_details": vin_details
+    }
+
+# Pipeline orquestador de respuestas
+
+def run_seda_pipeline(llm, vehicle_data: dict):
+    print("\n--- [FASE 1] Extracción de Datos del Vehículo ---")
+    make = vehicle_data.get("make", "")
+    model = vehicle_data.get("model", "")
+    year = vehicle_data.get("year", "")
+    dtc_code = vehicle_data.get("dtc_code", "")
+    vin_details = vehicle_data.get("vin_details", "No disponible")
+
+    print("\n" + "="*55)
+    print(" EJECUTANDO PIPELINE MULTI-FUENTE SEDA")
+    print("="*55)
+
+    #Fase 1: Consuolta de SQLite para la base de Datos de DTC definitions
+    print("\n--- [FASE 1] Consutla a base de datos de codigos DTC (SQLite) ---")
+    dtc_info = tool_consulta_db_dtc.invoke({"codigo": dtc_code, "marca": make})
+    print("-> Definición del código recuperada.")
+
+    #Fase 2: Busqueda RAG en base de conocimiento de ChromaDB
+    print("\n--- [FASE 2] Consulta a Base de Conocimiento RAG (ChromaDB) ---")
+    rag_query = f"{make} {model} {year} {dtc_code}"
+    manuals_info = tool_consultar_manuales.invoke(rag_query)
+    print("-> Información de manuales técnicos recuperada.")
+
+    #Fase 3: Busqueda web de refacciones en (DuckDuckGo)
+    print("\n--- [FASE 3] Búsqueda de Refacciones en línea (DuckDuckGo) ---")
+    search_query = f"{make} {model} {year} {dtc_code} spare part"
+    web_info = tool_buscar_refaccion_web.invoke(search_query)
+    print("-> Resultados de búsqueda de refacciones recuperados.")
+
+    #Fase 4: Sintetizar toda la información y generar respuesta final
+    print("\n--- [FASE 4] Generación de Respuesta Final con Reporte Especializado---")
+
+    prompt_final = f"""
+    Eres SEDA (Sistema Experto de Diagnóstico Automotriz), un asistente técnico para mecánicos y técnicos automotrices. Tu objetivo es generar un diagnóstico claro, técnicamente riguroso y útil.
+
+    DATOS PRINCIPALES DEL VEHÍCULO:
+    - Marca: {make}
+    - Modelo: {model}
+    - Año: {year}
+    - Código DTC registrado: {dtc_code}
+
+    === ESPECIFICACIONES TÉCNICAS DEL VIN (JSON) ===
+    {vin_details}
+
+    === INFORMACIÓN DEL CÓDIGO DTC (Base de Datos) ===
+    {dtc_info}
+
+    === EXTRACTOS TÉCNICOS RECUPERADOS DE MANUALES DE TALLER ===
+    {manuals_info}
+
+    === RESULTADOS DE BÚSQUEDA WEB PARA REFACCIONES ===
+    {web_info}
+
+    INSTRUCCIONES Y REGLAS ESTRICTAS DE REDACCIÓN:
+    1. IDIOMA Y TONO: Responde EXCLUSIVAMENTE en español con un lenguaje técnico, claro y profesional.
+    2. SÍNTESIS Y COPYRIGHT: Está PROHIBIDO copiar textualmente los fragmentos de los manuales. Sintetiza, parafrasea y explica los procedimientos con tus propias palabras.
+    3. ESPECIFICACIONES TÉCNICAS: Usa los detalles del VIN (tipo de motor, cilindrada, tracción) si modifican el procedimiento de revisión o las pruebas eléctricas.
+    4. MAPEO DE SUBMARCAS: Considera las submarcas y variantes de modelos (ej. Scion -> Toyota) para asegurar compatibilidad con el codigo DTC y compativbilidad de refacciones.
+    4. CITACIÓN ÉTICA: Si los extractos del manual indican páginas o archivos fuente, no lo cites, solo contruye respuesta en base a la infromacion.
+    5. REFACCIONES: Recomienda los repuestos necesarios integrando las alternativas o precios encontrados en la web. INCLUYE los enlaces a proveedores si están disponibles. Si no hay datos claros, indícalo explícitamente sin inventar enlaces.
+
+    ESTRUCTURA DEL REPORTE FINAL:
+    1. Resumen del Vehículo y Falla Identificada
+    2. Descripción Técnica del Código DTC
+    3. Procedimiento de Inspección y Pruebas Sugeridas
+    4. Opciones de Refacciones y Sugerencias de Compra
+    """
+
+    response = llm.invoke(prompt_final)
+    return response.content
+
+if __name__ == "__main__":
+    llm = obtener_llm()
+    if not llm:
+        print("Error: No se pudo inicializar el modelo de lenguaje. Verifica la configuración.")
+        sys.exit(1)
+
+    v_data = collect_vehicle_data()
+
     try:
-        diagnostico = pipeline_diagnostico_seda(llm_json, llm_texto, consulta_prueba)
+        report = run_seda_pipeline(llm, v_data)
         print("\n" + "="*50)
-        print("                 RESPUESTA FINAL                  ")
+        print("                 REPORTE DIAGNOSTICCO SEDA                  ")
         print("="*50)
-        print(diagnostico)
+        print(report)
+        print("="*50)
+    
     except Exception as e:
         print(f"\n❌ Error durante el pipeline: {str(e)}")

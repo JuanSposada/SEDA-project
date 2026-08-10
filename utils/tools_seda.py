@@ -2,12 +2,17 @@ import sqlite3
 import asyncio
 import requests
 from langchain.tools import tool
-from vininfo import Vin
 from rockauto_api import RockAutoClient
 from langchain_community.tools import DuckDuckGoSearchResults
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceBgeEmbeddings
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
+from utils.make_manager import get_make_for_search
 
+try:
+    from vininfo import Vin
+    HAS_VININFO = True
+except ImportError:
+    HAS_VININFO = False
 
 
 """
@@ -28,9 +33,14 @@ def tool_consulta_db_dtc(codigo: str, marca: str) -> str:
         conn = sqlite3.connect('data/dtc_codes.db')
         cursor = conn.cursor()
 
+        cursor.execute("SELECT DISTINCT manufacturer FROM dtc_definitions")
+        marcas_db = [row[0].upper() for row in cursor.fetchall()]
+
+        target_make = get_make_for_search(marca_limpia, marcas_db)
+
         cursor.execute(
             "SELECT code, manufacturer, description, type FROM dtc_definitions WHERE code = ? and manufacturer = ? LIMIT 1",
-            (codigo_limpio, marca_limpia)
+            (codigo_limpio, target_make.upper())
         )
         resultado = cursor.fetchone()
         
@@ -45,10 +55,10 @@ def tool_consulta_db_dtc(codigo: str, marca: str) -> str:
         if resultado:
             code, fabricante, descripcion, tipo = resultado
             return (f"-- Resultado DB Local --\n"
-                    f"Codigo: {code}\n"
-                    f"Fabricante: {fabricante}\n"
-                    f"Descripcion {descripcion}\n"
-                    f"Tipo de Sistema {tipo}"
+                    f"Code: {code}\n"
+                    f"Make: {fabricante}\n"
+                    f"Description: {descripcion}\n"
+                    f"System Type: {tipo}"
                     )
         else:
             return f"[Resultado DB local] el codigo {codigo} no se encontro en el catalogo de definiciones existente"
@@ -227,31 +237,45 @@ def tool_decodificar_vin(vin: str) -> str:
 
     try:
         response = requests.get(url_api, timeout=5)
-        if response.status_code != 200:
-            return f"Error: No se pudo conectar a la API de decodificación de VIN. Código HTTP: {response.status_code}"
+        response.raise_for_status()
         data = response.json()
-        resultados = data.get("Results", [])
-        if not resultados:
-            return f"Error: No se encontraron resultados para el VIN {vin_limpio}."
+        results = data.get("Results", [])
         
-        info_vehiculo = {item["Variable"]: item["Value"] for item in resultados if item["Value"]}
-        return f"[Decodificación VIN] Información extraída:\n" + "\n".join(f"{k}: {v}" for k, v in info_vehiculo.items())
+        if results:
+            info_bruta = {item["Variable"]: item["Value"] for item in results if item["Value"]}
+        return {
+                "status": "online",
+                "make": info_bruta.get("Make", ""),
+                "model": info_bruta.get("Model", ""),
+                "year": info_bruta.get("Model Year", ""),
+                "details": info_bruta # Guardamos el resto para el contexto del LLM
+            }
     
-    except requests.exceptions.RequestException as error_red:
-        print(f"Error al decodificar el VIN: {str(error_red)} intentando modo offline con vininfo...")
+    except requests.exceptions.RequestException as e:
+        print(f"[Aviso] Sin conexión a internet para VIN. Intentando modo offline...")
 
+    # Fallback para modo offline utilizando la libreria vininfo
+
+    if HAS_VININFO:
         try:
             v = Vin(vin_limpio)
-            info_vehiculo = {
-                "assembler": v.assembler,
-                "brand": v.brand,
-                "country": v.country,
-                "model_year": v.years,
-                "region": v.region,
-                "details": v.details,
+            years = v.years if v.years else [""]
+            calc_year = years[-1] if isinstance(years, list) else years
+            return {
+                "status": "offline",
+                "make": v.manufacturer or v.brand or "",
+                "model": "",
+                "year": str(calc_year),
+                "details": {
+                    "country": v.country,
+                    "region": v.region,
+                    "WMI": v.wmi,
+                }
             }
+            
         except Exception as e:
             return f"Error: No se pudo decodificar el VIN {vin_limpio} ni con la API ni con vininfo. Detalles: {str(e)}"
+    return {"error": "Sin conexión a internet y librería vininfo no disponible."}
 
 
 @tool
@@ -291,7 +315,7 @@ def tool_consultar_manuales(query: str) -> str:
     """
 
     print("[Sistema] Cargando modelo de Embeddings para Manuales Locales...")
-    modelo_embeddings = HuggingFaceBgeEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    modelo_embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
     # 2. Conectar a la base de datos vectorial existente
     vector_store = Chroma(persist_directory="./chroma_db", embedding_function=modelo_embeddings)

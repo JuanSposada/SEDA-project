@@ -61,4 +61,4 @@ def procesar_y_guardar_manuales():
     print(f"!Proceso completado con exito! Base de conocimiento persistida en: {directorio_vectorial}")
 
 if __name__ == "__main__":
-    procersar_y_guardar_manuales()
+    procesar_y_guardar_manuales()

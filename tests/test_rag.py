@@ -5,7 +5,7 @@ import os
 from ingesta_manuales import procesar_y_guardar_manuales 
 
 # Importamos la tool directamente desde tu archivo de herramientas
-from herramientas_seda import tool_consultar_manuales
+from utils.tools_seda import tool_consultar_manuales
 
 def testear_tool():
     if not os.path.exists("./chroma_db"):

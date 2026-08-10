@@ -2,7 +2,7 @@ import sys
 # Aseguramos que Python encuentre las herramientas si están en el mismo directorio
 sys.path.append('.') 
 
-from herramientas_seda import tool_consulta_db_dtc, tool_busqueda_rockauto
+from utils.tools_seda import tool_consulta_db_dtc, tool_busqueda_rockauto
 
 def ejecutar_pruebas():
     print("==================================================")
