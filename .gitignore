@@ -6,3 +6,4 @@ chroma_db/
 .env
 data/seda_diagnostico.db
 data/source-data
+scrapping/*

@@ -6,7 +6,7 @@ from rockauto_api import RockAutoClient
 from langchain_community.tools import DuckDuckGoSearchResults
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
-from utils.make_manager import get_make_for_search
+from utils.make_manager import get_make_for_search, get_all_related_makes
 
 try:
     from vininfo import Vin
@@ -14,7 +14,10 @@ try:
 except ImportError:
     HAS_VININFO = False
 
-
+STOPWORDS_ES = {"el", "la", "los", "las", "un", "una", "unos", 
+                "unas", "y", "o", "de", "del", "a", "al", "con", 
+                "en", "por", "para", "mi", "se", "que", "es", "no", 
+                "si", "me", "mucho", "muy"} 
 """
 TOOL # 1 Herramienta para consulta en base de datos local de dtc_codes.db
 """
@@ -346,3 +349,74 @@ def tool_consultar_manuales(query: str) -> str:
 
     except Exception as e:
         return f"[RAG] Error al buscar en los manuales locales: {str(e)}"
+
+
+@tool
+def tool_buscar_por_sintomas(sintomas: str, marca: str = "") -> dict:
+    """
+    Busca códigos de falla DTC probables en la base de datos basándose en síntomas.
+    """
+    clean_brand = marca.strip().upper() if marca else ""
+    
+    # 1. USAMOS TU UTILIDAD MODULAR PARA EXTRAER LA LISTA DE MARCAS (Ej. ["SCION", "TOYOTA"])
+    marcas_relevantes = get_all_related_makes(marca)
+
+    # 2. Extraer palabras clave de la descripción de síntomas
+    palabras = re.findall(r'\b\w+\b', sintomas.lower())
+    palabras_clave = [p for p in palabras if p not in STOPWORDS_ES and len(p) > 2]
+    
+    if not palabras_clave:
+        return {"error": "No se identificaron palabras clave suficientes en los síntomas."}
+
+    fts_query = " OR ".join(palabras_clave)
+
+    try:
+        conn = sqlite3.connect('data/seda_diagnostico.db')
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        # 3. Consultar la tabla virtual FTS5
+        sql = """
+            SELECT codigo, significado, marcas_afectadas, sintomas, causas, soluciones, 
+                   codigos_relacionados, puedo_manejarlo, reparacion, ubicacion, diagnostico, errores_comunes
+            FROM busqueda_global
+            WHERE busqueda_global MATCH ?
+            LIMIT 15
+        """
+        cursor.execute(sql, (fts_query,))
+        filas = cursor.fetchall()
+        conn.close()
+
+        if not filas:
+            return {"error": f"No se encontraron códigos coincidentes con los síntomas: '{sintomas}'."}
+
+        # 4. Clasificar y priorizar resultados usando la lista de tu make_manager
+        coincidencias_exactas_marca = []
+        coincidencias_generales = []
+
+        for f in filas:
+            item = dict(f)
+            marcas_texto = str(item.get("marcas_afectadas", "")).upper()
+            
+            # Verificamos si alguna de las marcas de tu utilidad está en el texto de la DB
+            match_marca = any(m in marcas_texto for m in marcas_relevantes) if marcas_relevantes else False
+            item["coincide_marca_vehiculo"] = match_marca
+
+            if match_marca:
+                coincidencias_exactas_marca.append(item)
+            else:
+                coincidencias_generales.append(item)
+
+        resultados_ordenados = coincidencias_exactas_marca + coincidencias_generales
+
+        return {
+            "sintomas_consultados": sintomas,
+            "palabras_clave_extraidas": palabras_clave,
+            "marca_evaluada": clean_brand,
+            "marcas_relacionadas_buscadas": marcas_relevantes,
+            "total_codigos_encontrados": len(resultados_ordenados),
+            "codigos_probables": resultados_ordenados[:5]
+        }
+
+    except Exception as e:
+        return {"error": f"Error al ejecutar la búsqueda por síntomas en FTS5: {str(e)}"}

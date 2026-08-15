@@ -6,7 +6,7 @@ from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 load_dotenv()
 
 def obtener_llm(
-        modelo_hf="Qwen/Qwen-2.5-7B-Instruct",
+        modelo_hf="Qwen/Qwen2.5-7B-Instruct",
         modelo_local="qwen2.5:3b",
 ):
     """
@@ -26,7 +26,7 @@ def obtener_llm(
                 max_new_tokens=1024,
                 temperature=0.1,
                 huggingfacehub_api_token=hf_token,
-                timeout=5
+                timeout=30
             )
 
             llm_cloud = ChatHuggingFace(llm=endpoint)

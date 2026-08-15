@@ -48,3 +48,21 @@ def get_make_for_search(make: str, available_makes_in_db: list) -> str:
             return parent_make  # Retorna la marca padre si está en la base de datos
 
     return clean_make  # Retorna la marca original si no hay coincidencia
+
+
+def get_all_related_makes(make: str) -> list:
+    """
+    Devuelve una lista con la marca ingresada y su marca padre (si tiene).
+    Ideal para el buscador FTS5 donde queremos maximizar las coincidencias.
+    Retorna la lista en MAYÚSCULAS para comparar más fácil.
+    """
+    clean_make = make.strip().lower()
+    if not clean_make:
+        return []
+        
+    relacionadas = [clean_make]
+    
+    if clean_make in SUBMAKE_TO_MAKE:
+        relacionadas.append(SUBMAKE_TO_MAKE[clean_make])
+        
+    return [m.upper() for m in relacionadas]
