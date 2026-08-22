@@ -1,4 +1,5 @@
 import sqlite3
+import re
 import asyncio
 import requests
 from langchain.tools import tool
@@ -391,7 +392,7 @@ def tool_buscar_por_sintomas(sintomas: str, marca: str = "") -> dict:
             return {"error": f"No se encontraron códigos coincidentes con los síntomas: '{sintomas}'."}
 
         # 4. Clasificar y priorizar resultados usando la lista de tu make_manager
-        coincidencias_exactas_marca = []
+        coincidencias_exactas= []
         coincidencias_generales = []
 
         for f in filas:
@@ -400,23 +401,47 @@ def tool_buscar_por_sintomas(sintomas: str, marca: str = "") -> dict:
             
             # Verificamos si alguna de las marcas de tu utilidad está en el texto de la DB
             match_marca = any(m in marcas_texto for m in marcas_relevantes) if marcas_relevantes else False
-            item["coincide_marca_vehiculo"] = match_marca
+            item["coincide_marca"] = match_marca
 
             if match_marca:
-                coincidencias_exactas_marca.append(item)
+                coincidencias_exactas.append(item)
             else:
                 coincidencias_generales.append(item)
 
-        resultados_ordenados = coincidencias_exactas_marca + coincidencias_generales
+        resultados = coincidencias_exactas + coincidencias_generales
 
         return {
-            "sintomas_consultados": sintomas,
-            "palabras_clave_extraidas": palabras_clave,
-            "marca_evaluada": clean_brand,
-            "marcas_relacionadas_buscadas": marcas_relevantes,
-            "total_codigos_encontrados": len(resultados_ordenados),
-            "codigos_probables": resultados_ordenados[:5]
+            "codigos_probables": resultados[:3], # Top 3 es suficiente contexto
+            "total_encontrados": len(resultados)
         }
 
     except Exception as e:
         return {"error": f"Error al ejecutar la búsqueda por síntomas en FTS5: {str(e)}"}
+
+
+# TOOL CONSULTA ENRIQUECIDA (Tabla 2 - seda_diagnostico.db / obd_informacion)
+@tool
+def tool_consulta_dtc_enriquecida(codigo: str) -> dict:
+    """Extrae contexto experto (síntomas, causas, soluciones) de obd_informacion."""
+    clean_code = codigo.strip().upper()
+    try:
+        conn = sqlite3.connect('data/seda_diagnostico.db')
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        # Usamos tus columnas reales
+        query = """
+            SELECT codigo, significado, marcas_afectadas, sintomas, causas, 
+                   soluciones, codigos_relacionados, puedo_manejarlo, 
+                   reparacion, ubicacion, diagnostico, errores_comunes
+            FROM obd_informacion
+            WHERE codigo = ? LIMIT 1
+        """
+        cursor.execute(query, (clean_code,))
+        row = cursor.fetchone()
+        conn.close()
+
+        return dict(row) if row else {"error": f"No hay contexto enriquecido para '{clean_code}'."}
+    except Exception as e:
+        return {"error": f"Error BD Enriquecida: {str(e)}"}
+        

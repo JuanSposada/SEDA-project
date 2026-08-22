@@ -5,7 +5,7 @@ from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 
 load_dotenv()
 
-def obtener_llm(
+def get_llm(
         modelo_hf="Qwen/Qwen2.5-7B-Instruct",
         modelo_local="qwen2.5:3b",
 ):
