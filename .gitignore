@@ -7,3 +7,4 @@ chroma_db/
 data/seda_diagnostico.db
 data/source-data
 scrapping/*
+.pytest_cache/

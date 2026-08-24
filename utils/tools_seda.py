@@ -22,6 +22,32 @@ STOPWORDS_ES = {"el", "la", "los", "las", "un", "una", "unos",
 """
 TOOL # 1 Herramienta para consulta en base de datos local de dtc_codes.db
 """
+_VECTOR_STORE = None
+
+def _get_vector_store():
+    global _VECTOR_STORE
+    if _VECTOR_STORE is None:
+        print("[Sistema] Inicializando modelo de Embeddings para Manuales Locales (Singleton)...")
+        modelo_embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+        _VECTOR_STORE = Chroma(persist_directory="./chroma_db", embedding_function=modelo_embeddings)
+    return _VECTOR_STORE
+
+
+def _run_async(coro):
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = None
+
+    if loop and loop.is_running():
+        import concurrent.futures
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(asyncio.run, coro)
+            return future.result()
+    else:
+        return asyncio.run(coro)
+
+
 @tool
 def tool_consulta_db_dtc(codigo: str, marca: str) -> str:
     """
@@ -34,27 +60,26 @@ def tool_consulta_db_dtc(codigo: str, marca: str) -> str:
     marca_limpia = marca.strip().split()[0].upper() if marca else ""
     codigo_limpio = codigo.strip().upper()
     try:
-        conn = sqlite3.connect('data/dtc_codes.db')
-        cursor = conn.cursor()
+        with sqlite3.connect('data/dtc_codes.db') as conn:
+            cursor = conn.cursor()
 
-        cursor.execute("SELECT DISTINCT manufacturer FROM dtc_definitions")
-        marcas_db = [row[0].upper() for row in cursor.fetchall()]
+            cursor.execute("SELECT DISTINCT manufacturer FROM dtc_definitions")
+            marcas_db = [row[0].upper() for row in cursor.fetchall()]
 
-        target_make = get_make_for_search(marca_limpia, marcas_db)
+            target_make = get_make_for_search(marca_limpia, marcas_db)
 
-        cursor.execute(
-            "SELECT code, manufacturer, description, type FROM dtc_definitions WHERE code = ? and manufacturer = ? LIMIT 1",
-            (codigo_limpio, target_make.upper())
-        )
-        resultado = cursor.fetchone()
-        
-        if not resultado:
             cursor.execute(
-                "SELECT code, manufacturer, description, type FROM dtc_definitions WHERE code = ? LIMIT 1",
-                (codigo_limpio,)
+                "SELECT code, manufacturer, description, type FROM dtc_definitions WHERE code = ? and manufacturer = ? LIMIT 1",
+                (codigo_limpio, target_make.upper())
             )
             resultado = cursor.fetchone()
-        conn.close()
+            
+            if not resultado:
+                cursor.execute(
+                    "SELECT code, manufacturer, description, type FROM dtc_definitions WHERE code = ? LIMIT 1",
+                    (codigo_limpio,)
+                )
+                resultado = cursor.fetchone()
         
         if resultado:
             code, fabricante, descripcion, tipo = resultado
@@ -216,15 +241,15 @@ def tool_busqueda_rockauto(datos_vehiculo_y_pieza: str) -> str:
     if len(partes) < 4:
         return "Error: Formato requerido para RockAuto: 'Marca, Año, Modelo, Pieza'"
     
-    make, year, model, pieza = partes[0], partes[1], partes[2], partes[3]
+    make = partes[0]
+    year = partes[1]
+    model = partes[2]
+    pieza = ", ".join(partes[3:]) if len(partes) > 4 else partes[3]
 
     try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
-    return loop.run_until_complete(_ejecutar_busqueda_rockauto_async(make, year, model, pieza))
+        return _run_async(_ejecutar_busqueda_rockauto_async(make, int(year), model, pieza))
+    except Exception as e:
+        return f"[RockAuto Error]: {str(e)}"
 
 
 @tool
@@ -247,18 +272,16 @@ def tool_decodificar_vin(vin: str) -> str:
         
         if results:
             info_bruta = {item["Variable"]: item["Value"] for item in results if item["Value"]}
-        return {
+            return {
                 "status": "online",
                 "make": info_bruta.get("Make", ""),
                 "model": info_bruta.get("Model", ""),
                 "year": info_bruta.get("Model Year", ""),
-                "details": info_bruta # Guardamos el resto para el contexto del LLM
+                "details": info_bruta
             }
     
     except requests.exceptions.RequestException as e:
         print(f"[Aviso] Sin conexión a internet para VIN. Intentando modo offline...")
-
-    # Fallback para modo offline utilizando la libreria vininfo
 
     if HAS_VININFO:
         try:
@@ -288,23 +311,37 @@ def tool_buscar_refaccion_web(datos_vehiculo_y_pieza: str) -> str:
     Busca en internet opciones de compra, precios y enlaces para una refacción automotriz.
     Entrada esperada: 'Año Marca Modelo Nombre de la Pieza' (ej. '2000 Acura TL MAP Sensor').
     """
-
-    #Limpuar el input por si el LLM pone comas
     query_limpia = datos_vehiculo_y_pieza.replace(",", " ").strip()
-
-    # Armado de query enfocado en compras
     query_busqueda = f"buy {query_limpia} autoparts price"
-
-    buscador = DuckDuckGoSearchResults(num_results=5)
 
     try:
         print(f"[Buscador Web] Buscando: {query_busqueda}...")
-        resultados = buscador.invoke(query_busqueda)
+        buscador = DuckDuckGoSearchResults(num_results=5)
+        resultados_raw = buscador.invoke(query_busqueda)
 
-        if not resultados:
-            return f"[Buscador Web] No se encontraron resultados para '{query_busqueda}'."
+        if not resultados_raw:
+            return f"No se encontraron resultados en la web para '{query_busqueda}'."
 
-        return f"Resultados encontrados en la web (usa esta información para recomendarle al usuario dónde comprar):\n{resultados}"
+        # Parsear la cadena de DuckDuckGo en elementos estructurados con Regex
+        pattern = r'snippet:\s*(.*?),\s*title:\s*(.*?),\s*link:\s*(https?://[^\s,\]]+)'
+        coincidencias = re.findall(pattern, str(resultados_raw), re.DOTALL)
+
+        if not coincidencias:
+            return str(resultados_raw)
+
+        salida_formateada = "### 🌐 Refacciones y Tiendas Encontradas en la Web:\n\n"
+        for i, (snippet, title, link) in enumerate(coincidencias, 1):
+            title_clean = title.strip()
+            snippet_clean = snippet.strip().replace("\n", " ")
+            link_clean = link.strip()
+
+            salida_formateada += (
+                f"{i}. 🛒 **[{title_clean}]({link_clean})**\n"
+                f"   - 📝 **Detalle:** {snippet_clean}\n"
+                f"   - 🔗 **Enlace Directo:** [{link_clean}]({link_clean})\n\n"
+            )
+
+        return salida_formateada.strip()
 
     except Exception as e:
         return f"[Buscador Web] Error al realizar la búsqueda: {str(e)}"
@@ -317,17 +354,10 @@ def tool_consultar_manuales(query: str) -> str:
     Entrada esperada: Una consulta muy específica con la marca, modelo, y el componente o código.
     Ejemplo: 'Acura TL 2000 diagnóstico Sensor MAP P1106 voltajes'
     """
-
-    print("[Sistema] Cargando modelo de Embeddings para Manuales Locales...")
-    modelo_embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-
-    # 2. Conectar a la base de datos vectorial existente
-    vector_store = Chroma(persist_directory="./chroma_db", embedding_function=modelo_embeddings)
-
     print(f"\n[RAG] Buscando en los manuales locales para la consulta: '{query}'...")
 
     try:
-        # Se extraen llos 3 fragmentos de PDF que más se asemejan a la consulta del usuario
+        vector_store = _get_vector_store()
         resultados = vector_store.similarity_search(query, k=10)
 
         if not resultados:
@@ -336,11 +366,8 @@ def tool_consultar_manuales(query: str) -> str:
         texto_recuperado = "[EXTRACTO DE MANUALES LOCALES]\n\n"
 
         for i, doc in enumerate(resultados):
-            # Extraccion de metadata para identificar de que PDF y de que pagina Viene la informacion
             fuente = doc.metadata.get("source", " Manual Desconocido")
             pagina = doc.metadata.get("page", "Página Desconocida")
-
-            #Limpiamos para que no mujestre la ruta del disco
             nombre_archivo = fuente.split("/")[-1].split("\\")[-1]
 
             texto_recuperado += f"--- Extracto {i+1} (Fuente: {nombre_archivo}, página: {pagina}) ---\n"
@@ -358,11 +385,8 @@ def tool_buscar_por_sintomas(sintomas: str, marca: str = "") -> dict:
     Busca códigos de falla DTC probables en la base de datos basándose en síntomas.
     """
     clean_brand = marca.strip().upper() if marca else ""
-    
-    # 1. USAMOS TU UTILIDAD MODULAR PARA EXTRAER LA LISTA DE MARCAS (Ej. ["SCION", "TOYOTA"])
     marcas_relevantes = get_all_related_makes(marca)
 
-    # 2. Extraer palabras clave de la descripción de síntomas
     palabras = re.findall(r'\b\w+\b', sintomas.lower())
     palabras_clave = [p for p in palabras if p not in STOPWORDS_ES and len(p) > 2]
     
@@ -372,76 +396,85 @@ def tool_buscar_por_sintomas(sintomas: str, marca: str = "") -> dict:
     fts_query = " OR ".join(palabras_clave)
 
     try:
-        conn = sqlite3.connect('data/seda_diagnostico.db')
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
+        with sqlite3.connect('data/seda_diagnostico.db') as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
 
-        # 3. Consultar la tabla virtual FTS5
-        sql = """
-            SELECT codigo, significado, marcas_afectadas, sintomas, causas, soluciones, 
-                   codigos_relacionados, puedo_manejarlo, reparacion, ubicacion, diagnostico, errores_comunes
-            FROM busqueda_global
-            WHERE busqueda_global MATCH ?
-            LIMIT 15
-        """
-        cursor.execute(sql, (fts_query,))
-        filas = cursor.fetchall()
-        conn.close()
+            sql = """
+                SELECT codigo, significado, marcas_afectadas, sintomas, causas, soluciones, 
+                       codigos_relacionados, puedo_manejarlo, reparacion, ubicacion, diagnostico, errores_comunes
+                FROM busqueda_global
+                WHERE busqueda_global MATCH ?
+                LIMIT 15
+            """
+            cursor.execute(sql, (fts_query,))
+            filas = cursor.fetchall()
 
         if not filas:
             return {"error": f"No se encontraron códigos coincidentes con los síntomas: '{sintomas}'."}
 
-        # 4. Clasificar y priorizar resultados usando la lista de tu make_manager
-        coincidencias_exactas= []
-        coincidencias_generales = []
+        coincidencias_exactas_p = []
+        coincidencias_exactas_otras = []
+        coincidencias_generales_p = []
+        coincidencias_generales_otras = []
 
         for f in filas:
             item = dict(f)
+            code = str(item.get("codigo", "")).strip().upper()
             marcas_texto = str(item.get("marcas_afectadas", "")).upper()
             
-            # Verificamos si alguna de las marcas de tu utilidad está en el texto de la DB
             match_marca = any(m in marcas_texto for m in marcas_relevantes) if marcas_relevantes else False
+            is_p_code = code.startswith("P")
+
             item["coincide_marca"] = match_marca
 
-            if match_marca:
-                coincidencias_exactas.append(item)
+            if match_marca and is_p_code:
+                coincidencias_exactas_p.append(item)
+            elif match_marca:
+                coincidencias_exactas_otras.append(item)
+            elif is_p_code:
+                coincidencias_generales_p.append(item)
             else:
-                coincidencias_generales.append(item)
+                coincidencias_generales_otras.append(item)
 
-        resultados = coincidencias_exactas + coincidencias_generales
+        resultados = (
+            coincidencias_exactas_p +
+            coincidencias_exactas_otras +
+            coincidencias_generales_p +
+            coincidencias_generales_otras
+        )
 
         return {
-            "codigos_probables": resultados[:3], # Top 3 es suficiente contexto
+            "codigos_probables": resultados[:3],
             "total_encontrados": len(resultados)
         }
+
 
     except Exception as e:
         return {"error": f"Error al ejecutar la búsqueda por síntomas en FTS5: {str(e)}"}
 
 
-# TOOL CONSULTA ENRIQUECIDA (Tabla 2 - seda_diagnostico.db / obd_informacion)
 @tool
 def tool_consulta_dtc_enriquecida(codigo: str) -> dict:
     """Extrae contexto experto (síntomas, causas, soluciones) de obd_informacion."""
     clean_code = codigo.strip().upper()
     try:
-        conn = sqlite3.connect('data/seda_diagnostico.db')
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
+        with sqlite3.connect('data/seda_diagnostico.db') as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
 
-        # Usamos tus columnas reales
-        query = """
-            SELECT codigo, significado, marcas_afectadas, sintomas, causas, 
-                   soluciones, codigos_relacionados, puedo_manejarlo, 
-                   reparacion, ubicacion, diagnostico, errores_comunes
-            FROM obd_informacion
-            WHERE codigo = ? LIMIT 1
-        """
-        cursor.execute(query, (clean_code,))
-        row = cursor.fetchone()
-        conn.close()
+            query = """
+                SELECT codigo, significado, marcas_afectadas, sintomas, causas, 
+                       soluciones, codigos_relacionados, puedo_manejarlo, 
+                       reparacion, ubicacion, diagnostico, errores_comunes
+                FROM obd_informacion
+                WHERE codigo = ? LIMIT 1
+            """
+            cursor.execute(query, (clean_code,))
+            row = cursor.fetchone()
 
         return dict(row) if row else {"error": f"No hay contexto enriquecido para '{clean_code}'."}
     except Exception as e:
         return {"error": f"Error BD Enriquecida: {str(e)}"}
+
         

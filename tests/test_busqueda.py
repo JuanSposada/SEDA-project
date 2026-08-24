@@ -47,7 +47,7 @@
 import requests
 import json
 
-def test_busqueda_con_sesion(query: str):
+def ejecutar_busqueda_con_sesion(query: str):
     print(f"\n[!] Iniciando búsqueda inteligente para: '{query}'")
     
     # 1. CREAMOS UNA SESIÓN PERSISTENTE (Igual que hace tu librería de GitHub)
@@ -124,7 +124,7 @@ def test_busqueda_con_sesion(query: str):
         return f"❌ Error general: {str(e)}"
 
 if __name__ == "__main__":
-    resultado = test_busqueda_con_sesion("acura 2000 tl MAP sensor")
+    resultado = ejecutar_busqueda_con_sesion("acura 2000 tl MAP sensor")
     print("\n" + "="*50)
     print(resultado)
     print("="*50)

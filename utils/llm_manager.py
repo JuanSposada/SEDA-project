@@ -6,45 +6,63 @@ from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 load_dotenv()
 
 def get_llm(
-        modelo_hf="Qwen/Qwen2.5-7B-Instruct",
-        modelo_local="qwen2.5:3b",
+        modelo_hf: str = "Qwen/Qwen2.5-Coder-7B-Instruct",
+        modelo_local: str = "qwen2.5:3b",
+        force_local: bool = False,
+        temperature: float = 0.1
 ):
     """
-    Intenta inicializar un modelo de CHAT a través de la API de Hugging Face (Nube).
-    Si falla (sin internet, timeout o error de servidor), hace fallback a ChatOllama (Local).
-    Ambos devuelven una interfaz de Chat compatible con LangChain (.invoke, JSON, Tools).
+    Inicializa la interfaz de Chat de LangChain.
+    
+    Por defecto intenta conectar vía API Nube con Hugging Face usando el modelo state-of-the-art:
+    'Qwen/Qwen2.5-Coder-7B-Instruct' (disponible en Hugging Face Serverless API, súper rápido).
+    
+    Si 'HF_TOKEN' no está presente o falla la conexión, realiza un Fallback automático a ChatOllama (Local).
+    
+    Parámetros:
+      - modelo_hf: Repositorio en Hugging Face (default: 'Qwen/Qwen2.5-7B-Instruct')
+      - modelo_local: Modelo en Ollama local (default: 'qwen2.5:3b')
+      - force_local: Si es True, omite la nube y fuerza el uso del modelo local en Ollama.
+      - temperature: Control de creatividad (default: 0.1 para evitar alucinaciones).
     """
     hf_token = os.environ.get('HF_TOKEN')
 
-    if hf_token:
-        print(f"[Sistema] Intentando conectar a Hugging Face (Cloud Chat) con: {modelo_hf}...")
+    if hf_token and not force_local:
+        print(f"[LLM Manager] ☁️ Conectando a Hugging Face API (Nube): {modelo_hf}...")
         try:
-            # Se Crea el endpoint para interactuar con HuggingFace
             endpoint = HuggingFaceEndpoint(
                 repo_id=modelo_hf,
                 task="text-generation",
-                max_new_tokens=1024,
-                temperature=0.1,
+                max_new_tokens=2500,
+                temperature=temperature,
                 huggingfacehub_api_token=hf_token,
-                timeout=30
+                timeout=60
             )
 
             llm_cloud = ChatHuggingFace(llm=endpoint)
-
-            llm_cloud.invoke("test")
+            # Prueba de conectividad rápida
+            llm_cloud.invoke("ping")
+            print(f"[LLM Manager] ✅ Conectado exitosamente a Hugging Face API ({modelo_hf}).")
             return llm_cloud
+
         except Exception as e:
-            print(f"Falló la conexión al modelo en la nube: {str(e)}")
-            print("[Sistema] Iniciando Fallback -> Cambiando a modelo LOCAL (ChatOllama)...")
+            print(f"⚠️ Falló la conexión a Hugging Face Cloud: {str(e)}")
+            print("[LLM Manager] 🔄 Activando Fallback -> Cambiando a modelo LOCAL (ChatOllama)...")
 
     else:
-        print("No se encontró HF_TOKEN en el entorno. Iniciando en modo LOCAL (ChatOllama)...")
+        if force_local:
+            print("[LLM Manager] 🖥️ Modo LOCAL forzado por parámetro.")
+        else:
+            print("[LLM Manager] ⚠️ No se encontró HF_TOKEN en .env. Iniciando en modo LOCAL (ChatOllama)...")
 
-    # Fallback Offline
+    # Fallback / Ejecución Offline Local con Ollama
     try:
-        llm_local = ChatOllama(model=modelo_local, temperature=0.1)
-        print(f"onectado al modelo local: ChatOllama ({modelo_local})")
+        print(f"[LLM Manager] 🖥️ Conectando a Ollama Local ({modelo_local})...")
+        llm_local = ChatOllama(model=modelo_local, temperature=temperature, num_predict=2048)
+        print(f"[LLM Manager] ✅ Conectado exitosamente a modelo local Ollama ({modelo_local}).")
         return llm_local
+
     except Exception as e:
-        print(f"Error CRÍTICO: No se pudo conectar ni a la nube ni a ChatOllama. Detalles: {e}")
+        print(f"❌ Error CRÍTICO: No se pudo conectar ni a la Nube ni a ChatOllama local. Detalles: {e}")
         return None
+

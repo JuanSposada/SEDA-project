@@ -7,7 +7,7 @@ from ingesta_manuales import procesar_y_guardar_manuales
 # Importamos la tool directamente desde tu archivo de herramientas
 from utils.tools_seda import tool_consultar_manuales
 
-def testear_tool():
+def ejecutar_menu_interactive_rag():
     if not os.path.exists("./chroma_db"):
         print("❌ La base de datos vectorial no existe aún. Ejecuta la Opción 1 primero.")
         return
@@ -43,7 +43,7 @@ if __name__ == "__main__":
             print("\n[Sistema] Iniciando pipeline de ingesta...")
             procesar_y_guardar_manuales()
         elif opcion == '2':
-            testear_tool()
+            ejecutar_menu_interactive_rag()
         elif opcion == '3':
             print("Saliendo del entorno de pruebas...")
             break
